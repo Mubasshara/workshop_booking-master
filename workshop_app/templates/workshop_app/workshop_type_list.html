@@ -1,85 +1,521 @@
 {% extends 'workshop_app/base.html' %}
 {% load custom_filters %}
+
 {% block title %}
-	View List of available Workshops
+    View List of available Workshops
 {% endblock %}
 
 {% block content %}
-    <div class="container">
-    <h2 class="text-center">Workshop Types</h2>
-    <br>
-    {% if request.user|has_group:"instructor" %}
-        <a href="{% url 'workshop_app:add_workshop_type' %}">
-        <button class="btn btn-md btn-primary float-right mb-3 mx-4">Add Workshop Type</button>
-        </a>
-        <br>
+<div class="container-fluid px-4 py-3">
+	{% extends 'workshop_app/base.html' %}
+{% load custom_filters %}
+
+{% block title %}
+    View List of available Workshops
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid px-4 py-3">
+    <!-- Header Section with improved styling -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="display-6 text-primary fw-bold mb-1">
+                <i class="fas fa-chalkboard-teacher me-2"></i>Workshop Types
+            </h2>
+            <p class="text-muted">Discover and manage available workshop categories</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if request.user|has_group:"instructor" %}
+                <a href="{% url 'workshop_app:add_workshop_type' %}" class="btn btn-primary btn-lg shadow-sm">
+                    <i class="fas fa-plus me-2"></i>Add Workshop Type
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Enhanced Table with Card-like appearance -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0 py-3">
+                    <h5 class="card-title mb-0 text-secondary">
+                        <i class="fas fa-list me-2"></i>Available Workshop Types
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if workshop_type %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="text-center" style="width: 10%;">
+                                            <i class="fas fa-hashtag me-1"></i>Sr No
+                                        </th>
+                                        <th style="width: 40%;">
+                                            <i class="fas fa-graduation-cap me-1"></i>Workshop Name
+                                        </th>
+                                        <th class="text-center" style="width: 25%;">
+                                            <i class="fas fa-calendar-days me-1"></i>Duration (Days)
+                                        </th>
+                                        <th class="text-center" style="width: 25%;">
+                                            <i class="fas fa-cog me-1"></i>Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for w in workshop_type %}
+                                        <tr class="align-middle">
+                                            <td class="text-center fw-bold text-primary" id="{{ forloop.counter }}">
+                                                {{ forloop.counter }}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                                        <i class="fas fa-workshop text-primary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0 text-dark">{{ w.name }}</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">
+                                                    {{ w.duration }} day{% if w.duration != 1 %}s{% endif %}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{% url 'workshop_app:workshop_type_details' w.id %}" 
+                                                   class="btn btn-outline-primary btn-sm shadow-sm">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <!-- Empty State -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No workshop types available</h5>
+                            <p class="text-muted">Get started by adding your first workshop type.</p>
+                            {% if request.user|has_group:"instructor" %}
+                                <a href="{% url 'workshop_app:add_workshop_type' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Add First Workshop Type
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Modal with better styling -->
+    <div id="mailModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="mailModalLabel">
+                        <i class="fas fa-envelope me-2"></i>Share Workshop Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info border-0" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Tip:</strong> Separate multiple email addresses using <strong>comma (,)</strong>
+                    </div>
+                    <form action="{{URL_ROOT}}/share_details/" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-bold">
+                                <i class="fas fa-envelope me-1"></i>Email Addresses:
+                            </label>
+                            <input name="email" type="email" class="form-control form-control-lg" 
+                                   id="email" placeholder="Enter email addresses separated by comma" multiple required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Send Details
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Pagination -->
+    {% if workshop_type.paginator.num_pages > 1 %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body py-3">
+                        <nav aria-label="Workshop pagination">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <!-- Previous Button -->
+                                <div>
+                                    {% if workshop_type.has_previous %}
+                                        <a class="btn btn-outline-primary" href="?page={{ workshop_type.previous_page_number }}">
+                                            <i class="fas fa-chevron-left me-1"></i>Previous
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary" disabled>
+                                            <i class="fas fa-chevron-left me-1"></i>Previous
+                                        </button>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Page Info -->
+                                <div class="text-center">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                                        Page {{ workshop_type.number }} of {{ workshop_type.paginator.num_pages }}
+                                    </span>
+                                </div>
+
+                                <!-- Next Button -->
+                                <div>
+                                    {% if workshop_type.has_next %}
+                                        <a class="btn btn-outline-primary" href="?page={{ workshop_type.next_page_number }}">
+                                            Next<i class="fas fa-chevron-right ms-1"></i>
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary" disabled>
+                                            Next<i class="fas fa-chevron-right ms-1"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
     {% endif %}
-	<div class="container">
-		<table class="table table-hover">
-		  <thead>
-		    <tr>
-		      <th>Sr No</th>
-		      <th>Workshop Name</th>
-		      <th>Workshop Duration (Days)</th>
-		      <th>Action</th>
-		    </tr>
-		  </thead>
-
-		{% for w in workshop_type %}
-		  <tbody>
-		    <tr  >
-		      <td scope="row" id="{{ forloop.counter }}">{{ forloop.counter }}</td>
-		      <td>{{ w.name }}</td>
-		      <td>{{ w.duration }}</td>
-		      <td><a href="{% url 'workshop_app:workshop_type_details' w.id %}" class="btn btn-outline-info" class="accordion-toggle" >View Workshop Details</a></td>
-		    </tr>
-		  </tbody>
-		 {% endfor %}
-		</table>
-	</div>
-
-	    <!-- The Modal -->
-	    <div id="mailModal" class="modal">
-
-	    <!-- Modal content -->
-	    <div class="modal-content">
-		<span class="close">&times;</span>
-		<p>Separate Multiple Email Id's using <strong> comma (,)</strong></p>
-		<form action="{{URL_ROOT}}/share_details/" method="POST">
-		  {% csrf_token %}
-		    <label > Email: </label>
-		    <input name="email" type='email' multiple>
-		    <input type='submit'>
-		</form>
-	    </div>
-	    </div>
-
-<!-- Page Navigation -->
-	<div class="container">
-
-		<div class="Page-Nav" align="center">
-		<nav aria-label="Page navigation">
-		 	<ul class="pagination pagination-sm">
-			  	<li class="page-item">
-			      {% if workshoptype.has_previous %}
-					<a class="page-link" tabindex="-1" 
-							href="?page={{ workshop_type.previous_page_number }}">Previous</a>
-				{% endif %}
-			    </li>
-			    <li class="page-item">
-			    <span class="current">
-				Page {{ workshop_type.number }} of {{ workshop_type.paginator.num_pages }}
-					</span>
-				</li>
-			    <li class="page-item">
-			    {% if workshop_type.has_next %}
-					<a class="page-link" href="?page={{ workshop_type.next_page_number }}">Next
-					</a>
-				{% endif %}
-			    </li>
-		  	</ul>
-		</nav>
-		</div>
-	</div>
 </div>
+
+<!-- Custom CSS for additional styling -->
+<style>
+    .container-fluid {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+    }
+    
+    .card {
+        transition: all 0.3s ease;
+        border-radius: 15px !important;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+        transform: scale(1.01);
+        transition: all 0.2s ease;
+    }
+    
+    .btn {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .badge {
+        font-weight: 500;
+        font-size: 0.85em;
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+    }
+    
+    .form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+    }
+    
+    .display-6 {
+        background: linear-gradient(45deg, var(--bs-primary), var(--bs-info));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+        
+        .btn-lg {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+        
+        .display-6 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+{% endblock %}
+    <!-- Header Section with improved styling -->
+    <div class="row mb-4">
+        <div class="col-md-8">
+            <h2 class="display-6 text-primary fw-bold mb-1">
+                <i class="fas fa-chalkboard-teacher me-2"></i>Workshop Types
+            </h2>
+            <p class="text-muted">Discover and manage available workshop categories</p>
+        </div>
+        <div class="col-md-4 text-end">
+            {% if request.user|has_group:"instructor" %}
+                <a href="{% url 'workshop_app:add_workshop_type' %}" class="btn btn-primary btn-lg shadow-sm">
+                    <i class="fas fa-plus me-2"></i>Add Workshop Type
+                </a>
+            {% endif %}
+        </div>
+    </div>
+
+    <!-- Enhanced Table with Card-like appearance -->
+    <div class="row">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-light border-0 py-3">
+                    <h5 class="card-title mb-0 text-secondary">
+                        <i class="fas fa-list me-2"></i>Available Workshop Types
+                    </h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if workshop_type %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-dark">
+                                    <tr>
+                                        <th class="text-center" style="width: 10%;">
+                                            <i class="fas fa-hashtag me-1"></i>Sr No
+                                        </th>
+                                        <th style="width: 40%;">
+                                            <i class="fas fa-graduation-cap me-1"></i>Workshop Name
+                                        </th>
+                                        <th class="text-center" style="width: 25%;">
+                                            <i class="fas fa-calendar-days me-1"></i>Duration (Days)
+                                        </th>
+                                        <th class="text-center" style="width: 25%;">
+                                            <i class="fas fa-cog me-1"></i>Action
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for w in workshop_type %}
+                                        <tr class="align-middle">
+                                            <td class="text-center fw-bold text-primary" id="{{ forloop.counter }}">
+                                                {{ forloop.counter }}
+                                            </td>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    <div class="bg-primary bg-opacity-10 rounded-circle p-2 me-3">
+                                                        <i class="fas fa-workshop text-primary"></i>
+                                                    </div>
+                                                    <div>
+                                                        <h6 class="mb-0 text-dark">{{ w.name }}</h6>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td class="text-center">
+                                                <span class="badge bg-info bg-opacity-10 text-info px-3 py-2 rounded-pill">
+                                                    {{ w.duration }} day{% if w.duration != 1 %}s{% endif %}
+                                                </span>
+                                            </td>
+                                            <td class="text-center">
+                                                <a href="{% url 'workshop_app:workshop_type_details' w.id %}" 
+                                                   class="btn btn-outline-primary btn-sm shadow-sm">
+                                                    <i class="fas fa-eye me-1"></i>View Details
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <!-- Empty State -->
+                        <div class="text-center py-5">
+                            <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                            <h5 class="text-muted">No workshop types available</h5>
+                            <p class="text-muted">Get started by adding your first workshop type.</p>
+                            {% if request.user|has_group:"instructor" %}
+                                <a href="{% url 'workshop_app:add_workshop_type' %}" class="btn btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Add First Workshop Type
+                                </a>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Modal with better styling -->
+    <div id="mailModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="mailModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header bg-primary text-white">
+                    <h5 class="modal-title" id="mailModalLabel">
+                        <i class="fas fa-envelope me-2"></i>Share Workshop Details
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="alert alert-info border-0" role="alert">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Tip:</strong> Separate multiple email addresses using <strong>comma (,)</strong>
+                    </div>
+                    <form action="{{URL_ROOT}}/share_details/" method="POST">
+                        {% csrf_token %}
+                        <div class="mb-3">
+                            <label for="email" class="form-label fw-bold">
+                                <i class="fas fa-envelope me-1"></i>Email Addresses:
+                            </label>
+                            <input name="email" type="email" class="form-control form-control-lg" 
+                                   id="email" placeholder="Enter email addresses separated by comma" multiple required>
+                        </div>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Send Details
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Enhanced Pagination -->
+    {% if workshop_type.paginator.num_pages > 1 %}
+        <div class="row mt-4">
+            <div class="col-12">
+                <div class="card border-0 shadow-sm">
+                    <div class="card-body py-3">
+                        <nav aria-label="Workshop pagination">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <!-- Previous Button -->
+                                <div>
+                                    {% if workshop_type.has_previous %}
+                                        <a class="btn btn-outline-primary" href="?page={{ workshop_type.previous_page_number }}">
+                                            <i class="fas fa-chevron-left me-1"></i>Previous
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary" disabled>
+                                            <i class="fas fa-chevron-left me-1"></i>Previous
+                                        </button>
+                                    {% endif %}
+                                </div>
+
+                                <!-- Page Info -->
+                                <div class="text-center">
+                                    <span class="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
+                                        Page {{ workshop_type.number }} of {{ workshop_type.paginator.num_pages }}
+                                    </span>
+                                </div>
+
+                                <!-- Next Button -->
+                                <div>
+                                    {% if workshop_type.has_next %}
+                                        <a class="btn btn-outline-primary" href="?page={{ workshop_type.next_page_number }}">
+                                            Next<i class="fas fa-chevron-right ms-1"></i>
+                                        </a>
+                                    {% else %}
+                                        <button class="btn btn-outline-secondary" disabled>
+                                            Next<i class="fas fa-chevron-right ms-1"></i>
+                                        </button>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </nav>
+                    </div>
+                </div>
+            </div>
+        </div>
+    {% endif %}
+</div>
+
+<!-- Custom CSS for additional styling -->
+<style>
+    .container-fluid {
+        background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        min-height: 100vh;
+    }
+    
+    .card {
+        transition: all 0.3s ease;
+        border-radius: 15px !important;
+    }
+    
+    .card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+    
+    .table-hover tbody tr:hover {
+        background-color: rgba(var(--bs-primary-rgb), 0.05);
+        transform: scale(1.01);
+        transition: all 0.2s ease;
+    }
+    
+    .btn {
+        transition: all 0.3s ease;
+        border-radius: 10px;
+    }
+    
+    .btn:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+    }
+    
+    .badge {
+        font-weight: 500;
+        font-size: 0.85em;
+    }
+    
+    .modal-content {
+        border-radius: 15px;
+    }
+    
+    .form-control:focus {
+        border-color: var(--bs-primary);
+        box-shadow: 0 0 0 0.2rem rgba(var(--bs-primary-rgb), 0.25);
+    }
+    
+    .display-6 {
+        background: linear-gradient(45deg, var(--bs-primary), var(--bs-info));
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    @media (max-width: 768px) {
+        .table-responsive {
+            font-size: 0.9rem;
+        }
+        
+        .btn-lg {
+            padding: 0.5rem 1rem;
+            font-size: 1rem;
+        }
+        
+        .display-6 {
+            font-size: 1.5rem;
+        }
+    }
+</style>
+
 {% endblock %}

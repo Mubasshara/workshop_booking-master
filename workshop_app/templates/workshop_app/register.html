@@ -243,7 +243,7 @@
         50% { opacity: 0.5; }
     }
 
-    /* Enhanced Submit Button */
+    /* Enhanced Submit Button - FIXED VERSION */
     .submit-section {
         text-align: center;
         padding: 2rem 0 1rem 0;
@@ -252,19 +252,22 @@
     }
 
     .btn-register {
-        background: var(--primary-gradient) !important;
+        background: linear-gradient(135deg, #007bff, #0056b3) !important;
         border: none !important;
-        border-radius: var(--border-radius) !important;
+        border-radius: 8px !important;
         padding: 1rem 3rem !important;
         font-size: 1.1rem !important;
         font-weight: 600 !important;
         color: white !important;
         min-width: 200px !important;
-        transition: var(--transition) !important;
+        transition: all 0.3s ease !important;
         position: relative !important;
         overflow: hidden !important;
         text-transform: uppercase !important;
         letter-spacing: 0.5px !important;
+        display: inline-flex !important;
+        align-items: center !important;
+        justify-content: center !important;
     }
 
     .btn-register::before {
@@ -284,25 +287,32 @@
 
     .btn-register:hover {
         transform: translateY(-3px) !important;
-        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4) !important;
+        box-shadow: 0 12px 30px rgba(0, 123, 255, 0.4) !important;
+        color: white !important;
     }
 
     .btn-register:active {
         transform: translateY(-1px) !important;
     }
 
+    /* Button Loading State - FIXED */
     .btn-register.loading {
-        pointer-events: none;
-        opacity: 0.8;
+        pointer-events: none !important;
+        opacity: 0.8 !important;
+        cursor: not-allowed !important;
     }
 
     .btn-register .spinner {
-        display: none;
-        margin-right: 0.5rem;
+        display: none !important;
+        margin-right: 0.5rem !important;
     }
 
     .btn-register.loading .spinner {
-        display: inline-block;
+        display: inline-block !important;
+    }
+
+    .btn-register.loading .fa-user-plus {
+        display: none !important;
     }
 
     /* Progress indicator */
@@ -470,7 +480,7 @@
 
                         <div class="submit-section">
                             <button class="btn btn-primary btn-register" type="submit" id="submitBtn">
-                                <span class="spinner-border spinner-border-sm spinner" role="status"></span>
+                                <span class="spinner-border spinner-border-sm spinner" role="status" aria-hidden="true"></span>
                                 <i class="fa fa-user-plus"></i> Register
                             </button>
                         </div>
@@ -535,7 +545,7 @@ $(document).ready(function() {
         updateProgress();
     });
 
-    // Form submission enhancements
+    // Form submission enhancements - FIXED
     $form.on('submit', function(e) {
         let hasErrors = false;
         
@@ -545,7 +555,7 @@ $(document).ready(function() {
             const isRequired = $input.prop('required') || $input.closest('tr').find('label.required').length > 0;
             
             if (isRequired && $input.val().trim() === '') {
-                $input.css('border-color', 'var(--error-color)');
+                $input.css('border-color', '#dc3545');
                 $input.closest('tr').addClass('focused');
                 hasErrors = true;
                 
@@ -568,23 +578,15 @@ $(document).ready(function() {
                 }, 500);
             }
             
-            // Show error notification
-            if (typeof toastr !== 'undefined') {
-                toastr.error('Please fill out all required fields.');
-            }
-            
             return false;
         }
         
-        // Show loading state
+        // Show loading state - FIXED
         $submitBtn.addClass('loading');
-        $submitBtn.html('<span class="spinner-border spinner-border-sm spinner" role="status"></span> <i class="fa fa-spinner fa-spin"></i> Registering...');
         $submitBtn.prop('disabled', true);
         
-        // Show loading overlay
-        if (typeof showLoading === 'function') {
-            showLoading();
-        }
+        // Don't prevent form submission - let it proceed normally
+        // The form will submit and Django will handle the redirect
     });
 
     // Enhanced input animations
@@ -611,13 +613,6 @@ $(document).ready(function() {
     // Initialize progress
     updateProgress();
 
-    // Add smooth scrolling to form sections
-    $formInputs.first().focus(function() {
-        $('html, body').animate({
-            scrollTop: $(this).offset().top - 100
-        }, 300);
-    });
-
     // Floating label effect for better UX
     $formInputs.each(function() {
         const $input = $(this);
@@ -625,7 +620,7 @@ $(document).ready(function() {
         
         $input.on('focus', function() {
             $label.css({
-                'color': 'var(--primary-color)',
+                'color': '#007bff',
                 'transform': 'scale(1.05)',
                 'transition': 'all 0.3s ease'
             });
