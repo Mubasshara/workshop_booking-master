@@ -17,108 +17,768 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.9.3/Chart.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
 
-
     {% block extra-dependencies %}
     {% endblock %}
 
     <link rel="stylesheet" href="{% static 'workshop_app/css/bootstrap.min.css' %}">
     <link rel="stylesheet" href="{% static 'workshop_app/css/toastr.min.css' %}">
     <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{% static 'workshop_app/css/base.css' %}" type="text/css"/>
     <link rel="stylesheet" href="{% static 'workshop_app/css/font-awesome.css' %}" type="text/css"/>
     <link rel="stylesheet" type="text/css" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
+
+    <style>
+        :root {
+            --primary-color: #2563eb;
+            --primary-hover: #1d4ed8;
+            --primary-light: #dbeafe;
+            --secondary-color: #64748b;
+            --success-color: #059669;
+            --warning-color: #d97706;
+            --danger-color: #dc2626;
+            --dark-bg: #1e293b;
+            --darker-bg: #0f172a;
+            --light-text: #f8fafc;
+            --border-color: #e2e8f0;
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --border-radius: 8px;
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #334155;
+            background: linear-gradient(135deg, #f8fafc 0%, #f1f5f9 100%);
+            min-height: 100vh;
+        }
+
+        /* Enhanced Navbar with Scroll Effects */
+        .navbar {
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%) !important;
+            box-shadow: 0 0 0 0 rgba(0, 0, 0, 0);
+            border-bottom: 1px solid transparent;
+            padding: 1rem 0;
+            backdrop-filter: blur(0px);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+        }
+
+        .navbar::before {
+            content: '';
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            height: 20px;
+            background: linear-gradient(180deg, rgba(15, 23, 42, 0.1) 0%, transparent 100%);
+            opacity: 0;
+            transition: var(--transition);
+        }
+
+        .navbar.scrolled {
+            background: rgba(15, 23, 42, 0.95) !important;
+            box-shadow: var(--shadow-lg);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(20px);
+            padding: 0.5rem 0;
+        }
+
+        .navbar.scrolled::before {
+            opacity: 1;
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            font-size: 1.5rem;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            transition: var(--transition);
+        }
+
+        .navbar-brand:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.1);
+        }
+
+        .navbar-nav .nav-link {
+            color: var(--light-text) !important;
+            font-weight: 500;
+            padding: 0.5rem 1rem !important;
+            margin: 0 0.25rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .navbar-nav .nav-link:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+            transition: var(--transition);
+        }
+
+        .navbar-nav .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .navbar-nav .nav-link:hover:before {
+            left: 100%;
+        }
+
+        /* Dropdown Enhancements */
+        .dropdown-menu {
+            border: none;
+            box-shadow: var(--shadow-lg);
+            border-radius: var(--border-radius);
+            padding: 0.5rem 0;
+            background: white;
+            backdrop-filter: blur(10px);
+            margin-top: 0.5rem;
+        }
+
+        .dropdown-item {
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border-radius: 0;
+        }
+
+        .dropdown-item:hover {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            transform: translateX(4px);
+        }
+
+        /* User Profile Section */
+        .user-profile-section {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            padding: 0.5rem 1rem;
+            border-radius: var(--border-radius);
+            transition: var(--transition);
+        }
+
+        .user-profile-section:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .material-icons {
+            font-size: 1.5rem !important;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        /* Content Area - Seamless Integration */
+        .base-content {
+            margin-top: 0;
+            padding-top: 6rem; /* Account for navbar */
+            padding-bottom: 2rem;
+            min-height: calc(100vh - 120px); /* Account for footer */
+            flex: 1;
+            position: relative;
+        }
+
+        .base-content::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 100px;
+            background: linear-gradient(180deg, 
+                rgba(248, 250, 252, 0.8) 0%, 
+                rgba(248, 250, 252, 0.4) 50%,
+                transparent 100%);
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        /* Page wrapper for proper footer positioning */
+        .page-wrapper {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        /* Footer Enhancement with Seamless Integration */
+        .footer {
+            background: linear-gradient(135deg, var(--darker-bg) 0%, var(--dark-bg) 100%);
+            color: var(--light-text);
+            padding: 3rem 0 2rem 0;
+            margin-top: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .footer::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 0;
+            right: 0;
+            height: 50px;
+            background: linear-gradient(180deg, 
+                transparent 0%, 
+                rgba(15, 23, 42, 0.1) 30%,
+                rgba(15, 23, 42, 0.3) 70%,
+                rgba(15, 23, 42, 0.6) 100%);
+        }
+
+        .footer .container {
+            text-align: center;
+            font-weight: 500;
+            position: relative;
+            z-index: 1;
+        }
+
+        .footer .container::before {
+            content: '';
+            position: absolute;
+            top: -2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 80px;
+            height: 3px;
+            background: linear-gradient(135deg, #60a5fa, #3b82f6);
+            border-radius: 2px;
+            box-shadow: 0 0 20px rgba(96, 165, 250, 0.3);
+        }
+
+        /* Navbar Toggler Animation */
+        .navbar-toggler {
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: var(--border-radius);
+            padding: 0.5rem;
+            transition: var(--transition);
+        }
+
+        .navbar-toggler:hover {
+            border-color: rgba(255, 255, 255, 0.4);
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-toggler:focus {
+            box-shadow: 0 0 0 3px rgba(96, 165, 250, 0.3);
+        }
+
+        /* General content styling for all pages */
+        .content-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+
+        /* Page Header with Integrated Design */
+        .page-header {
+            background: linear-gradient(135deg, 
+                rgba(248, 250, 252, 0.9) 0%, 
+                rgba(226, 232, 240, 0.7) 100%);
+            padding: 2rem 0;
+            margin-bottom: 2rem;
+            position: relative;
+            backdrop-filter: blur(10px);
+        }
+
+        .page-header::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, 
+                transparent 0%, 
+                var(--border-color) 20%, 
+                var(--border-color) 80%, 
+                transparent 100%);
+        }
+
+        .page-title {
+            color: var(--primary-color);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 2rem;
+        }
+
+        .page-subtitle {
+            color: var(--secondary-color);
+            font-size: 1.1rem;
+            margin: 0;
+        }
+
+        /* Card styling for consistent content blocks */
+        .content-card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+            padding: 1.5rem;
+            margin-bottom: 1.5rem;
+            transition: var(--transition);
+        }
+
+        .content-card:hover {
+            box-shadow: var(--shadow-md);
+            transform: translateY(-1px);
+        }
+
+        /* Form styling for consistency */
+        .form-group label {
+            font-weight: 500;
+            color: #374151;
+            margin-bottom: 0.5rem;
+        }
+
+        .form-control {
+            border-radius: var(--border-radius);
+            border: 1px solid var(--border-color);
+            transition: var(--transition);
+            padding: 0.75rem;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+        }
+
+        /* Table styling */
+        .table {
+            border-radius: var(--border-radius);
+            overflow: hidden;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--border-color);
+        }
+
+        .table th {
+            background: var(--primary-light);
+            color: var(--primary-color);
+            font-weight: 600;
+            border: none;
+            padding: 1rem 0.75rem;
+        }
+
+        .table td {
+            border-color: var(--border-color);
+            padding: 0.75rem;
+            vertical-align: middle;
+        }
+
+        /* Button enhancements */
+        .btn {
+            border-radius: var(--border-radius);
+            padding: 0.75rem 1.5rem;
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            box-shadow: var(--shadow-sm);
+        }
+
+        .btn-primary:hover {
+            background: linear-gradient(135deg, var(--primary-hover), #1e40af);
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-secondary {
+            background: var(--secondary-color);
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success-color);
+        }
+
+        .btn-warning {
+            background: var(--warning-color);
+        }
+
+        .btn-danger {
+            background: var(--danger-color);
+        }
+
+        /* Alert styling */
+        .alert {
+            border-radius: var(--border-radius);
+            border: none;
+            padding: 1rem 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--shadow-sm);
+        }
+
+        .alert-primary {
+            background: var(--primary-light);
+            color: var(--primary-color);
+        }
+
+        .alert-success {
+            background: #dcfdf7;
+            color: var(--success-color);
+        }
+
+        .alert-warning {
+            background: #fef3c7;
+            color: var(--warning-color);
+        }
+
+        .alert-danger {
+            background: #fee2e2;
+            color: var(--danger-color);
+        }
+
+        /* Mobile Optimizations */
+        @media (max-width: 991.98px) {
+            .navbar-collapse {
+                background: rgba(15, 23, 42, 0.95);
+                backdrop-filter: blur(10px);
+                margin-top: 1rem;
+                border-radius: var(--border-radius);
+                padding: 1rem;
+                border: 1px solid rgba(255, 255, 255, 0.1);
+            }
+
+            .navbar-nav {
+                gap: 0.5rem;
+            }
+
+            .navbar-nav .nav-link {
+                border-radius: var(--border-radius);
+                padding: 0.75rem 1rem !important;
+            }
+
+            .base-content {
+                padding-top: 5rem;
+                padding-bottom: 1rem;
+            }
+
+            .page-header {
+                padding: 1.5rem 0;
+                margin-bottom: 1.5rem;
+            }
+
+            .navbar.scrolled {
+                padding: 0.4rem 0;
+            }
+        }
+
+        @media (max-width: 576px) {
+            .content-container {
+                padding: 0 0.75rem;
+            }
+
+            .base-content {
+                padding-top: 4.5rem;
+            }
+
+            .btn {
+                padding: 0.6rem 1.2rem;
+                font-size: 0.9rem;
+            }
+
+            .navbar {
+                padding: 0.8rem 0;
+            }
+
+            .navbar.scrolled {
+                padding: 0.3rem 0;
+            }
+
+            .footer {
+                padding: 2.5rem 0 1.5rem 0;
+            }
+        }
+
+        /* Scroll Indicator */
+        .scroll-indicator {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 0%;
+            height: 3px;
+            background: linear-gradient(90deg, #60a5fa, #3b82f6, #8b5cf6);
+            z-index: 9999;
+            transition: width 0.1s ease-out;
+        }
+
+        /* Toast Notifications Enhancement */
+        .toast {
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow-lg);
+        }
+
+        /* Loading Animation */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .base-content {
+            animation: fadeInUp 0.6s ease-out;
+        }
+
+        /* Enhanced Button Styles */
+        .btn-modern {
+            padding: 0.75rem 1.5rem;
+            border-radius: var(--border-radius);
+            font-weight: 500;
+            transition: var(--transition);
+            border: none;
+            box-shadow: var(--shadow-sm);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn-modern:hover {
+            transform: translateY(-1px);
+            box-shadow: var(--shadow-md);
+        }
+
+        .btn-modern:active {
+            transform: translateY(0);
+        }
+
+        .btn-primary-modern {
+            background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+            color: white;
+        }
+
+        /* Breadcrumb styling */
+        .breadcrumb {
+            background: transparent;
+            padding: 0;
+            margin-bottom: 1rem;
+        }
+
+        .breadcrumb-item {
+            color: var(--secondary-color);
+        }
+
+        .breadcrumb-item.active {
+            color: var(--primary-color);
+            font-weight: 500;
+        }
+
+        .breadcrumb-item a {
+            color: var(--primary-color);
+            text-decoration: none;
+        }
+
+        .breadcrumb-item a:hover {
+            text-decoration: underline;
+        }
+
+        /* Loading states */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 1rem;
+            height: 1rem;
+            border: 2px solid rgba(0,0,0,.1);
+            border-left-color: var(--primary-color);
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Accessibility Improvements */
+        .nav-link:focus,
+        .dropdown-item:focus {
+            outline: 2px solid #60a5fa;
+            outline-offset: 2px;
+        }
+
+        /* Smooth scrolling */
+        html {
+            scroll-behavior: smooth;
+        }
+    </style>
 
     {% block extra-custom-scripts %}
     {% endblock %}
 
 </head>
 
-<body>
+<body class="page-wrapper">
+<!-- Scroll Progress Indicator -->
+<div class="scroll-indicator" id="scrollIndicator"></div>
+
 {% block header %}
-    <nav class="navbar navbar-dark navbar-expand-lg bg-dark fixed-top">
-        {% if user.is_authenticated %}
-        <a class="navbar-brand text-white" href="{% url 'workshop_app:index' %}">FOSSEE Workshops</a>
-        {% else %}
-        <a class="navbar-brand text-white" href="{{request.scheme}}://{{request.get_host}}">FOSSEE Workshops</a>
-        {% endif %}
-        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-                aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navbarSupportedContent">
-            <ul class="navbar-nav">
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="/">
-                        Home
-                    </a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'statistics_app:public' %}">
-                        Workshop Statistics
-                    </a>
-                </li>
-            </ul>
+    <nav class="navbar navbar-dark navbar-expand-lg fixed-top" id="mainNavbar">
+        <div class="container-fluid px-4">
             {% if user.is_authenticated %}
-            <ul class="navbar-nav mr-auto">
-                {% if request.user|has_group:"instructor" %}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'statistics_app:team' %}">
-                        Team Statistics
-                    </a>
-                </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'workshop_app:workshop_status_instructor' %}">
-                        Workshop Status
-                    </a>
-                </li>
-                {% if not request.user|has_group:"instructor" %}
+            <a class="navbar-brand text-white" href="{% url 'workshop_app:index' %}">
+                <span class="material-icons" style="vertical-align: middle; margin-right: 0.5rem;">school</span>
+                FOSSEE Workshops
+            </a>
+            {% else %}
+            <a class="navbar-brand text-white" href="{{request.scheme}}://{{request.get_host}}">
+                <span class="material-icons" style="vertical-align: middle; margin-right: 0.5rem;">school</span>
+                FOSSEE Workshops
+            </a>
+            {% endif %}
+            
+            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
+                    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            
+            <div class="collapse navbar-collapse" id="navbarSupportedContent">
+                <ul class="navbar-nav">
                     <li class="nav-item">
-                        <a class="nav-link text-white" href="{% url 'workshop_app:propose_workshop' %}">
-                            Propose Workshop
+                        <a class="nav-link text-white" href="/">
+                            <span class="material-icons" style="vertical-align: middle; margin-right: 0.25rem; font-size: 1.2rem;">home</span>
+                            Home
                         </a>
                     </li>
-                {% endif %}
-                <li class="nav-item">
-                    <a class="nav-link text-white" href="{% url 'workshop_app:workshop_type_list' %}">
-                        Workshop Types
-                    </a>
-                </li>
-            </ul>
-            <div class="my-2 my-lg-0">
-                <ul class="navbar-nav mr-auto">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle text-white" href="#" id="navbarDropdown" role="button"
-                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                           <span class="material-icons" style="vertical-align: middle">account_circle</span>
-                            <p style="display: inline; vertical-align: middle">
-                                {{user.get_full_name|title}}
-                            </p>
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'statistics_app:public' %}">
+                            <span class="material-icons" style="vertical-align: middle; margin-right: 0.25rem; font-size: 1.2rem;">analytics</span>
+                            Workshop Statistics
                         </a>
-                        <div class="dropdown-menu" aria-labelledby="navbarDropdown">
-                            <a class="dropdown-item" href="{% url 'workshop_app:view_own_profile' %}">Profile</a>
-                            <a class="dropdown-item" href="{% url 'password_change' %}">
-                                 Change Password
-                            </a>
-                            <a class="dropdown-item" href="{% url 'workshop_app:logout' %}">Logout</a>
-                        </div>
                     </li>
                 </ul>
+                
+                {% if user.is_authenticated %}
+                <ul class="navbar-nav mr-auto">
+                    {% if request.user|has_group:"instructor" %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'statistics_app:team' %}">
+                            <span class="material-icons" style="vertical-align: middle; margin-right: 0.25rem; font-size: 1.2rem;">group</span>
+                            Team Statistics
+                        </a>
+                    </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'workshop_app:workshop_status_instructor' %}">
+                            <span class="material-icons" style="vertical-align: middle; margin-right: 0.25rem; font-size: 1.2rem;">event_note</span>
+                            Workshop Status
+                        </a>
+                    </li>
+                    {% if not request.user|has_group:"instructor" %}
+                        <li class="nav-item">
+                            <a class="nav-link text-white" href="{% url 'workshop_app:propose_workshop' %}">
+                                <span class="material-icons" style="vertical-align: middle; margin-right: 0.25rem; font-size: 1.2rem;">add_circle</span>
+                                Propose Workshop
+                            </a>
+                        </li>
+                    {% endif %}
+                    <li class="nav-item">
+                        <a class="nav-link text-white" href="{% url 'workshop_app:workshop_type_list' %}">
+                            <span class="material-icons" style="vertical-align: middle; margin-right: 0.25rem; font-size: 1.2rem;">category</span>
+                            Workshop Types
+                        </a>
+                    </li>
+                </ul>
+                
+                <div class="my-2 my-lg-0">
+                    <ul class="navbar-nav mr-auto">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle text-white user-profile-section" href="#" id="navbarDropdown" role="button"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                               <span class="material-icons" style="vertical-align: middle;">account_circle</span>
+                                <span style="vertical-align: middle; margin-left: 0.5rem;">
+                                    {{user.get_full_name|title}}
+                                </span>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-right" aria-labelledby="navbarDropdown">
+                                <a class="dropdown-item" href="{% url 'workshop_app:view_own_profile' %}">
+                                    <span class="material-icons" style="vertical-align: middle; margin-right: 0.5rem; font-size: 1.1rem;">person</span>
+                                    Profile
+                                </a>
+                                <a class="dropdown-item" href="{% url 'password_change' %}">
+                                    <span class="material-icons" style="vertical-align: middle; margin-right: 0.5rem; font-size: 1.1rem;">lock</span>
+                                    Change Password
+                                </a>
+                                <div class="dropdown-divider"></div>
+                                <a class="dropdown-item" href="{% url 'workshop_app:logout' %}">
+                                    <span class="material-icons" style="vertical-align: middle; margin-right: 0.5rem; font-size: 1.1rem;">logout</span>
+                                    Logout
+                                </a>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+                {% endif %}
             </div>
-            {% endif %}
         </div>
     </nav>
 {% endblock %}
 
-<div class="base-content">
-    {% block content %}
-        <h1>Base Template Content. Please override me</h1>
+<main class="base-content">
+    {% block breadcrumb %}
     {% endblock %}
-</div>
+    
+    {% block page_header %}
+    {% endblock %}
+    
+    {% block content %}
+        <div class="content-container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8 text-center">
+                    <h1 class="page-title">
+                        Welcome to FOSSEE Workshops
+                    </h1>
+                    <p class="page-subtitle">
+                        Base Template Content. Please override me
+                    </p>
+                </div>
+            </div>
+        </div>
+    {% endblock %}
+</main>
 
 <script>
     {% if messages %}
         {% for message in messages %}
+            toastr.options = {
+                "closeButton": true,
+                "progressBar": true,
+                "positionClass": "toast-top-right",
+                "showDuration": "300",
+                "hideDuration": "1000",
+                "timeOut": "5000",
+                "extendedTimeOut": "1000",
+                "showEasing": "swing",
+                "hideEasing": "linear",
+                "showMethod": "fadeIn",
+                "hideMethod": "fadeOut"
+            };
             toastr[{% if message.tags %} "{{ message.tags }}" {% else %} "info" {% endif %}]("{{ message }}");
         {% endfor %}
     {% endif %}
@@ -128,6 +788,7 @@
 <footer class="footer">
     {% block footer %}
        <div class="container">
+           <span class="material-icons" style="vertical-align: middle; margin-right: 0.5rem; font-size: 1.2rem;">code</span>
            Developed by FOSSEE group, IIT Bombay
        </div> 
     {% endblock %}
