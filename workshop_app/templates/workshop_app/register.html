@@ -1,35 +1,644 @@
 {% extends 'workshop_app/base.html' %}
 
-	{% block title %}
-		Register
-	{% endblock %}
+{% block title %}
+    Register
+{% endblock %}
+
+{% block extra-custom-scripts %}
+<style type="text/css">
+    /* Keep original required field styling */
+    label.required::after {
+        content: "*";
+        color: red;
+    }
+
+    .errorlist {
+        color: red;
+    }
+
+    /* Enhanced Registration Page Styling */
+    .registration-container {
+        min-height: 80vh;
+        padding: 2rem 0;
+        background: linear-gradient(135deg, rgba(102, 126, 234, 0.1) 0%, rgba(118, 75, 162, 0.1) 100%);
+        margin: -1rem -15px;
+        padding: 2rem 15px;
+    }
+
+    .registration-card {
+        max-width: 800px;
+        margin: 0 auto;
+        position: relative;
+    }
+
+    .registration-header {
+        text-align: center;
+        margin-bottom: 2rem;
+        position: relative;
+    }
+
+    .registration-header::before {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 50%;
+        transform: translateX(-50%);
+        width: 80px;
+        height: 4px;
+        background: var(--primary-gradient);
+        border-radius: 2px;
+    }
+
+    .registration-header h3 {
+        color: var(--primary-color);
+        font-weight: 700;
+        font-size: 2.5rem;
+        margin-bottom: 0.5rem;
+        position: relative;
+    }
+
+    .registration-header .subtitle {
+        color: #666;
+        font-size: 1.1rem;
+        margin: 0;
+    }
+
+    .registration-form {
+        background: rgba(255, 255, 255, 0.95);
+        backdrop-filter: blur(10px);
+        border-radius: var(--border-radius-lg);
+        box-shadow: var(--card-shadow);
+        padding: 0;
+        overflow: hidden;
+        border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .form-header {
+        background: var(--primary-gradient);
+        color: white;
+        padding: 1.5rem 2rem;
+        margin: 0;
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-header::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        animation: shimmer 3s linear infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .form-header h4 {
+        margin: 0;
+        font-weight: 600;
+        position: relative;
+        z-index: 1;
+    }
+
+    .form-body {
+        padding: 2.5rem;
+    }
+
+    /* Enhanced Table Styling */
+    .table {
+        background: transparent !important;
+        border: none !important;
+        box-shadow: none !important;
+        margin-bottom: 2rem;
+    }
+
+    .table td {
+        border: none !important;
+        padding: 1rem 0.5rem !important;
+        vertical-align: middle !important;
+    }
+
+    .table tr {
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05) !important;
+        transition: var(--transition) !important;
+    }
+
+    .table tr:hover {
+        background: rgba(102, 126, 234, 0.03) !important;
+        transform: none !important; /* Override base table hover */
+    }
+
+    .table tr:last-child {
+        border-bottom: none !important;
+    }
+
+    /* Enhanced Form Field Styling */
+    .table td:first-child {
+        width: 30%;
+        font-weight: 600;
+        color: #555;
+        padding-right: 1rem !important;
+    }
+
+    .table td:last-child {
+        width: 70%;
+    }
+
+    /* Style all form inputs */
+    .table input[type="text"],
+    .table input[type="email"],
+    .table input[type="password"],
+    .table input[type="tel"],
+    .table input[type="url"],
+    .table input[type="number"],
+    .table select,
+    .table textarea {
+        width: 100% !important;
+        padding: 1rem !important;
+        border: 2px solid #e1e5e9 !important;
+        border-radius: var(--border-radius) !important;
+        font-size: 1rem !important;
+        transition: var(--transition) !important;
+        background: rgba(255, 255, 255, 0.9) !important;
+        box-shadow: none !important;
+    }
+
+    .table input:focus,
+    .table select:focus,
+    .table textarea:focus {
+        border-color: var(--input-focus) !important;
+        box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25) !important;
+        transform: translateY(-1px) !important;
+        outline: none !important;
+    }
+
+    .table input:hover,
+    .table select:hover,
+    .table textarea:hover {
+        border-color: rgba(102, 126, 234, 0.5) !important;
+    }
+
+    /* Select dropdown styling */
+    .table select {
+        background-image: url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='currentColor' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") !important;
+        background-repeat: no-repeat !important;
+        background-position: right 1rem center !important;
+        background-size: 1rem !important;
+        padding-right: 3rem !important;
+        appearance: none !important;
+        -webkit-appearance: none !important;
+        -moz-appearance: none !important;
+    }
+
+    /* Textarea styling */
+    .table textarea {
+        min-height: 120px !important;
+        resize: vertical !important;
+        font-family: inherit !important;
+    }
+
+    /* Error styling */
+    .errorlist {
+        color: var(--error-color) !important;
+        background: rgba(220, 53, 69, 0.1) !important;
+        border: 1px solid rgba(220, 53, 69, 0.2) !important;
+        border-radius: var(--border-radius) !important;
+        padding: 0.75rem 1rem !important;
+        margin: 0.5rem 0 1rem 0 !important;
+        list-style: none !important;
+        animation: slideIn 0.3s ease !important;
+    }
+
+    .errorlist li {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-size: 0.9rem !important;
+        font-weight: 500 !important;
+    }
+
+    .errorlist li::before {
+        content: "⚠ " !important;
+        margin-right: 0.5rem !important;
+    }
+
+    /* Required field styling enhancement */
+    label.required {
+        position: relative;
+    }
+
+    label.required::after {
+        content: " *";
+        color: var(--error-color) !important;
+        font-weight: bold;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.5; }
+    }
+
+    /* Enhanced Submit Button */
+    .submit-section {
+        text-align: center;
+        padding: 2rem 0 1rem 0;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+        margin-top: 2rem;
+    }
+
+    .btn-register {
+        background: var(--primary-gradient) !important;
+        border: none !important;
+        border-radius: var(--border-radius) !important;
+        padding: 1rem 3rem !important;
+        font-size: 1.1rem !important;
+        font-weight: 600 !important;
+        color: white !important;
+        min-width: 200px !important;
+        transition: var(--transition) !important;
+        position: relative !important;
+        overflow: hidden !important;
+        text-transform: uppercase !important;
+        letter-spacing: 0.5px !important;
+    }
+
+    .btn-register::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: -100%;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transition: left 0.5s ease;
+    }
+
+    .btn-register:hover::before {
+        left: 100%;
+    }
+
+    .btn-register:hover {
+        transform: translateY(-3px) !important;
+        box-shadow: 0 12px 30px rgba(102, 126, 234, 0.4) !important;
+    }
+
+    .btn-register:active {
+        transform: translateY(-1px) !important;
+    }
+
+    .btn-register.loading {
+        pointer-events: none;
+        opacity: 0.8;
+    }
+
+    .btn-register .spinner {
+        display: none;
+        margin-right: 0.5rem;
+    }
+
+    .btn-register.loading .spinner {
+        display: inline-block;
+    }
+
+    /* Progress indicator */
+    .form-progress {
+        background: #f8f9fa;
+        border-radius: var(--border-radius);
+        padding: 1rem;
+        margin-bottom: 1.5rem;
+        text-align: center;
+        border: 2px solid #e9ecef;
+    }
+
+    .progress-text {
+        color: #666;
+        font-size: 0.9rem;
+        margin: 0;
+    }
+
+    .progress-bar-custom {
+        background: var(--primary-gradient);
+        height: 4px;
+        border-radius: 2px;
+        margin-top: 0.5rem;
+        transition: width 0.3s ease;
+    }
+
+    /* Floating background elements */
+    .floating-elements {
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        overflow: hidden;
+        z-index: -1;
+        pointer-events: none;
+    }
+
+    .floating-element {
+        position: absolute;
+        background: rgba(102, 126, 234, 0.1);
+        border-radius: 50%;
+        animation: float 8s ease-in-out infinite;
+    }
+
+    .floating-element:nth-child(1) {
+        width: 60px;
+        height: 60px;
+        top: 20%;
+        left: 10%;
+        animation-delay: 0s;
+    }
+
+    .floating-element:nth-child(2) {
+        width: 80px;
+        height: 80px;
+        top: 50%;
+        right: 10%;
+        animation-delay: 2s;
+    }
+
+    .floating-element:nth-child(3) {
+        width: 40px;
+        height: 40px;
+        bottom: 20%;
+        left: 20%;
+        animation-delay: 4s;
+    }
+
+    @keyframes float {
+        0%, 100% { 
+            transform: translateY(0px) rotate(0deg); 
+            opacity: 0.7;
+        }
+        50% { 
+            transform: translateY(-30px) rotate(180deg); 
+            opacity: 0.3;
+        }
+    }
+
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .registration-container {
+            padding: 1rem;
+        }
+        
+        .form-body {
+            padding: 1.5rem;
+        }
+        
+        .table td:first-child {
+            width: 100%;
+            display: block;
+            padding-bottom: 0.5rem !important;
+        }
+        
+        .table td:last-child {
+            width: 100%;
+            display: block;
+        }
+        
+        .table tr {
+            display: block;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+        }
+        
+        .registration-header h3 {
+            font-size: 2rem;
+        }
+        
+        .btn-register {
+            width: 100% !important;
+            margin-top: 1rem !important;
+        }
+    }
+
+    /* Field focus animations */
+    .table tr.focused {
+        background: rgba(102, 126, 234, 0.05) !important;
+        border-left: 4px solid var(--primary-color) !important;
+    }
+
+    /* Help text styling */
+    .helptext {
+        font-size: 0.85rem !important;
+        color: #666 !important;
+        margin-top: 0.25rem !important;
+        font-style: italic !important;
+    }
+</style>
+{% endblock %}
 
 {% block content %}
+<div class="registration-container">
+    <div class="floating-elements">
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+        <div class="floating-element"></div>
+    </div>
 
-	<style type="text/css">
-    	label.required::after {
-    	content: "*";
-    	color: red;
-		}
+    <div class="container">
+        <div class="registration-header">
+            <h3><i class="fa fa-user-plus"></i> Coordinator Registration</h3>
+            <p class="subtitle">Join the FOSSEE Workshops community</p>
+        </div>
 
-		.errorlist {
-      color: red;
+        <div class="registration-card">
+            <div class="registration-form">
+                <div class="form-header">
+                    <h4><i class="fa fa-clipboard-list"></i> Registration Form</h4>
+                </div>
+                
+                <div class="form-body">
+                    <div class="form-progress">
+                        <p class="progress-text">Fill out all required fields marked with <span style="color: red;">*</span></p>
+                        <div class="progress-bar-custom" id="progressBar" style="width: 0%;"></div>
+                    </div>
+
+                    <form action="" method="post" id="registrationForm">
+                        {% csrf_token %}
+                        <table class="table table-bordered">
+                            {{ form.as_table }}
+                        </table>
+
+                        <div class="submit-section">
+                            <button class="btn btn-primary btn-register" type="submit" id="submitBtn">
+                                <span class="spinner-border spinner-border-sm spinner" role="status"></span>
+                                <i class="fa fa-user-plus"></i> Register
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <br>
+        <!-- Activate when Instructor registration starts -->
+        <br>
+    </div>
+</div>
+
+<script>
+$(document).ready(function() {
+    const $form = $('#registrationForm');
+    const $submitBtn = $('#submitBtn');
+    const $progressBar = $('#progressBar');
+    
+    // Get all form inputs
+    const $formInputs = $form.find('input, select, textarea').not('[type="hidden"]');
+    const totalFields = $formInputs.length;
+
+    // Function to update progress bar
+    function updateProgress() {
+        let filledFields = 0;
+        $formInputs.each(function() {
+            if ($(this).val().trim() !== '') {
+                filledFields++;
+            }
+        });
+        
+        const progress = (filledFields / totalFields) * 100;
+        $progressBar.css('width', progress + '%');
     }
-	</style>
 
-	<div class="container" >
-		<br>
-		<h3>Coordinator Registration Form</h3>
-		<br>
-		<form action="" method="post">
-			{% csrf_token %}
-				<table class="table table-bordered">
-					{{ form.as_table }}
-				</table>
+    // Enhanced form interactions
+    $formInputs.on('focus', function() {
+        $(this).closest('tr').addClass('focused');
+        $(this).closest('tr').css('transform', 'scale(1.01)');
+    });
 
-				<button class="btn btn-primary" type="submit">Register</button>
-		</form><br>
-		<!-- Activate when Instructor registeration starts -->
-		<br>
-	</div>
+    $formInputs.on('blur', function() {
+        $(this).closest('tr').removeClass('focused');
+        $(this).closest('tr').css('transform', 'scale(1)');
+        updateProgress();
+    });
+
+    // Real-time validation and styling
+    $formInputs.on('input change', function() {
+        const $input = $(this);
+        const $errorList = $input.closest('td').find('.errorlist');
+        
+        // Remove error styling when user starts typing
+        if ($errorList.length) {
+            $errorList.fadeOut(300, function() {
+                $(this).remove();
+            });
+        }
+        
+        $input.css('border-color', '#e1e5e9');
+        updateProgress();
+    });
+
+    // Form submission enhancements
+    $form.on('submit', function(e) {
+        let hasErrors = false;
+        
+        // Basic validation for required fields
+        $formInputs.each(function() {
+            const $input = $(this);
+            const isRequired = $input.prop('required') || $input.closest('tr').find('label.required').length > 0;
+            
+            if (isRequired && $input.val().trim() === '') {
+                $input.css('border-color', 'var(--error-color)');
+                $input.closest('tr').addClass('focused');
+                hasErrors = true;
+                
+                // Create error message if doesn't exist
+                if (!$input.closest('td').find('.errorlist').length) {
+                    const errorHtml = '<ul class="errorlist"><li>This field is required.</li></ul>';
+                    $input.after(errorHtml);
+                }
+            }
+        });
+        
+        if (hasErrors) {
+            e.preventDefault();
+            
+            // Scroll to first error
+            const $firstError = $('.errorlist').first();
+            if ($firstError.length) {
+                $('html, body').animate({
+                    scrollTop: $firstError.offset().top - 100
+                }, 500);
+            }
+            
+            // Show error notification
+            if (typeof toastr !== 'undefined') {
+                toastr.error('Please fill out all required fields.');
+            }
+            
+            return false;
+        }
+        
+        // Show loading state
+        $submitBtn.addClass('loading');
+        $submitBtn.html('<span class="spinner-border spinner-border-sm spinner" role="status"></span> <i class="fa fa-spinner fa-spin"></i> Registering...');
+        $submitBtn.prop('disabled', true);
+        
+        // Show loading overlay
+        if (typeof showLoading === 'function') {
+            showLoading();
+        }
+    });
+
+    // Enhanced input animations
+    $formInputs.on('focus', function() {
+        $(this).css({
+            'transform': 'translateY(-2px)',
+            'box-shadow': '0 0 0 0.2rem rgba(102, 126, 234, 0.25)'
+        });
+    });
+
+    $formInputs.on('blur', function() {
+        $(this).css({
+            'transform': 'translateY(0)',
+            'box-shadow': 'none'
+        });
+    });
+
+    // Auto-resize textareas
+    $('textarea').on('input', function() {
+        this.style.height = 'auto';
+        this.style.height = (this.scrollHeight) + 'px';
+    });
+
+    // Initialize progress
+    updateProgress();
+
+    // Add smooth scrolling to form sections
+    $formInputs.first().focus(function() {
+        $('html, body').animate({
+            scrollTop: $(this).offset().top - 100
+        }, 300);
+    });
+
+    // Floating label effect for better UX
+    $formInputs.each(function() {
+        const $input = $(this);
+        const $label = $input.closest('tr').find('td:first-child');
+        
+        $input.on('focus', function() {
+            $label.css({
+                'color': 'var(--primary-color)',
+                'transform': 'scale(1.05)',
+                'transition': 'all 0.3s ease'
+            });
+        });
+        
+        $input.on('blur', function() {
+            $label.css({
+                'color': '#555',
+                'transform': 'scale(1)',
+                'transition': 'all 0.3s ease'
+            });
+        });
+    });
+});
+</script>
 {% endblock %}
