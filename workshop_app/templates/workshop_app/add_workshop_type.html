@@ -1,50 +1,549 @@
 {% extends 'workshop_app/base.html' %}
+{% load static %}
 
 {% block title %}
     Add new Workshop type
 {% endblock %}
 
+{% block extra-dependencies %}
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+{% endblock %}
+
+{% block extra-custom-scripts %}
+    <script src="{% static 'workshop_app/js/jquery.formset.js' %}"></script>
+{% endblock %}
+
 {% block content %}
-    <div class="container">
-        <h2 class="text-center m-2">New Workshop Type</h2>
-        <br>
-        <form method="post">
-            <div class="row my-3">
-                <div class="col-3 font-weight-bold">Workshop Name :</div>
-                <div class="col text-left">
-                    <div class="row"><div class="col">{{ form.name }}</div></div>
-                    <div class="row m-1 text-danger"><div class="col">{{ form.name.errors }}</div></div>
-                </div>
+    <style type="text/css">
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --info-color: #4299e1;
+            --light-bg: #f8fafc;
+            --dark-text: #2d3748;
+            --muted-text: #718096;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
 
-            </div>
-            <div class="row my-3">
-                <div class="col-3 font-weight-bold">Duration :</div>
-                <div class="col text-left">
-                    <div class="row"><div class="col">{{ form.duration }}</div></div>
-                    <div class="row m-1 text-muted"><div class="col">{{ form.duration.help_text }}</div></div>
-                    <div class="row m-1 text-danger"><div class="col">{{ form.duration.errors }}</div></div>
-                </div>
-            </div>
-            <div class="row my-3">
-                <div class="col-3 font-weight-bold">Description :</div>
-                <div class="col text-left">
-                    <div class="row"><div class="col">{{ form.description }}</div></div>
-                    <div class="row m-1 text-danger"><div class="col">{{ form.description.errors }}</div></div>
-                </div>
-            </div>
-            <div class="row my-3">
-                <div class="col-3 font-weight-bold">Terms and Conditions :</div>
-                <div class="col text-left">
-                    <div class="row"><div class="col">{{ form.terms_and_conditions }}</div></div>
-                    <div class="row m-1 text-danger"><div class="col">{{ form.terms_and_conditions.errors }}</div></div>
-                </div>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .main-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow-lg);
+            overflow: hidden;
+            margin: 2rem auto;
+            max-width: 900px;
+            position: relative;
+        }
+
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .form-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .form-header h2 {
+            color: var(--dark-text);
+            font-weight: 700;
+            font-size: 2rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .form-header .subtitle {
+            color: var(--muted-text);
+            font-size: 1.1rem;
+            margin-top: 0.5rem;
+            font-weight: 400;
+        }
+
+        .form-content {
+            padding: 3rem 2rem;
+        }
+
+        .form-section {
+            margin-bottom: 3rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--dark-text);
+            margin-bottom: 2rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .form-field {
+            margin-bottom: 2rem;
+            transition: all 0.3s ease;
+        }
+
+        .field-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-weight: 600;
+            color: var(--dark-text);
+            margin-bottom: 0.75rem;
+            font-size: 1rem;
+        }
+
+        .field-wrapper {
+            position: relative;
+        }
+
+        .form-control, input[type="text"], input[type="number"], textarea, select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: white;
+        }
+
+        .form-control:focus, input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        textarea {
+            min-height: 120px;
+            resize: vertical;
+        }
+
+        .help-text {
+            font-size: 0.875rem;
+            color: var(--muted-text);
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .error-text {
+            color: var(--danger-color);
+            font-size: 0.875rem;
+            margin-top: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .error-text::before {
+            content: '⚠️';
+            font-size: 1rem;
+        }
+
+        /* Attachment Section */
+        .attachment-section {
+            background: var(--light-bg);
+            border-radius: 12px;
+            padding: 2rem;
+            margin-top: 2rem;
+            border: 2px dashed var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .attachment-section:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.02);
+        }
+
+        .attachment-item {
+            background: white;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            box-shadow: var(--card-shadow);
+            border-left: 4px solid var(--primary-color);
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .attachment-item:hover {
+            box-shadow: var(--card-shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .attachment-controls {
+            display: flex;
+            gap: 1rem;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .attachment-field {
+            flex: 1;
+            min-width: 200px;
+        }
+
+        .attachment-field input[type="file"] {
+            border: 2px dashed var(--border-color);
+            background: var(--light-bg);
+            padding: 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .attachment-field input[type="file"]:hover {
+            border-color: var(--primary-color);
+            background: rgba(102, 126, 234, 0.05);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            font-size: 1rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px 0 rgba(102, 126, 234, 0.5);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, var(--danger-color), #e53e3e);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(245, 101, 101, 0.4);
+        }
+
+        .btn-danger:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px 0 rgba(245, 101, 101, 0.5);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #38a169);
+            color: white;
+            box-shadow: 0 4px 14px 0 rgba(72, 187, 120, 0.4);
+            padding: 1rem 2rem;
+            font-size: 1.1rem;
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px 0 rgba(72, 187, 120, 0.5);
+        }
+
+        /* Form Actions */
+        .form-actions {
+            background: var(--light-bg);
+            padding: 2rem;
+            border-top: 1px solid var(--border-color);
+            text-align: center;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                border-radius: 12px;
+            }
+
+            .form-content {
+                padding: 2rem 1rem;
+            }
+
+            .form-header {
+                padding: 2rem 1rem;
+            }
+
+            .form-header h2 {
+                font-size: 1.5rem;
+            }
+
+            .attachment-controls {
+                flex-direction: column;
+            }
+
+            .attachment-field {
+                min-width: 100%;
+            }
+        }
+
+        /* Animations */
+        .form-field {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .form-field:nth-child(1) { animation-delay: 0.1s; }
+        .form-field:nth-child(2) { animation-delay: 0.2s; }
+        .form-field:nth-child(3) { animation-delay: 0.3s; }
+        .form-field:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Hidden class for formset */
+        .hidden {
+            display: none !important;
+        }
+
+        /* Add button styling */
+        .inline-form-add {
+            background: linear-gradient(135deg, var(--info-color), #3182ce);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .inline-form-add:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px 0 rgba(66, 153, 225, 0.4);
+        }
+
+        .inline-form-add::before {
+            content: '+';
+            font-size: 1.2rem;
+            font-weight: bold;
+        }
+    </style>
+
+    <div class="container-fluid">
+        <div class="main-container animate__animated animate__fadeInUp">
+            <!-- Header Section -->
+            <div class="form-header">
+                <h2>
+                    <i class="fas fa-cogs"></i>
+                    View / Edit Workshop Type
+                </h2>
+                <p class="subtitle">Configure workshop details and manage attachments</p>
             </div>
 
-            <div class="row my-3">
-                <div class="col-12">
-                    <button type="submit" class="btn btn-md btn-primary float-right m-3">Create</button>
-                </div>
+            <!-- Form Content -->
+            <div class="form-content">
+                <form method="post" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <!-- Basic Information Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-info-circle"></i>
+                            Basic Information
+                        </h3>
+
+                        <div class="form-field">
+                            <label class="field-label">
+                                <i class="fas fa-tag"></i>
+                                Workshop Name
+                            </label>
+                            <div class="field-wrapper">
+                                {{ form.name }}
+                                {% if form.name.errors %}
+                                    <div class="error-text">{{ form.name.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="field-label">
+                                <i class="fas fa-clock"></i>
+                                Duration
+                            </label>
+                            <div class="field-wrapper">
+                                {{ form.duration }}
+                                {% if form.duration.help_text %}
+                                    <div class="help-text">
+                                        <i class="fas fa-info-circle"></i>
+                                        {{ form.duration.help_text }}
+                                    </div>
+                                {% endif %}
+                                {% if form.duration.errors %}
+                                    <div class="error-text">{{ form.duration.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="field-label">
+                                <i class="fas fa-align-left"></i>
+                                Description
+                            </label>
+                            <div class="field-wrapper">
+                                {{ form.description }}
+                                {% if form.description.errors %}
+                                    <div class="error-text">{{ form.description.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <div class="form-field">
+                            <label class="field-label">
+                                <i class="fas fa-file-contract"></i>
+                                Terms and Conditions
+                            </label>
+                            <div class="field-wrapper">
+                                {{ form.terms_and_conditions }}
+                                {% if form.terms_and_conditions.errors %}
+                                    <div class="error-text">{{ form.terms_and_conditions.errors }}</div>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Attachments Section -->
+                    <div class="form-section">
+                        <h3 class="section-title">
+                            <i class="fas fa-paperclip"></i>
+                            Attachments
+                        </h3>
+
+                        <div class="attachment-section">
+                            {{ form_file.management_form }}
+                            {{ form_file.non_form_errors }}
+                            
+                            {% for form in form_file %}
+                                <div class="inline {{ form_file.prefix }} attachment-item animate__animated animate__fadeIn">
+                                    <div class="attachment-controls">
+                                        {% for field in form %}
+                                            <div class="attachment-field">
+                                                {{ field }}
+                                            </div>
+                                        {% endfor %}
+                                        
+                                        {% if form.id.value %}
+                                            <div class="attachment-delete">
+                                                <a href="{% url 'workshop_app:delete_attachment_file' form.id.value %}" 
+                                                   class="btn btn-danger" 
+                                                   onclick="return confirm('Are you sure you want to delete this attachment?')">
+                                                    <i class="fas fa-trash"></i>
+                                                    Delete
+                                                </a>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Form Actions -->
+                    <div class="form-actions">
+                        <button type="submit" class="btn btn-success">
+                            <i class="fas fa-save"></i>
+                            Save Workshop Type
+                        </button>
+                    </div>
+                </form>
             </div>
-        </form>
+        </div>
     </div>
+
+    <script type="text/javascript">
+        $(function () {
+            $(".inline.{{ form_file.prefix }}").formset({
+                prefix: "{{ form_file.prefix }}", // The form prefix for your django formset
+                addCssClass: "btn btn-md btn-primary bordered inline-form-add", // CSS class applied to the add link
+                deleteCssClass: "hidden", // CSS class applied to the delete link
+                addText: 'Add another attachment', // Text for the add link
+                deleteText: '',
+                formCssClass: 'inline-form' // CSS class applied to each form in a formset
+            });
+
+            // Add animation to newly added forms
+            $(document).on('formAdded', function(event, $form) {
+                $form.addClass('animate__animated animate__fadeIn');
+                $form.find('input[type="file"]').on('change', function() {
+                    if (this.files && this.files[0]) {
+                        $(this).parent().addClass('file-selected');
+                    }
+                });
+            });
+
+            // Form submission feedback
+            $('form').on('submit', function() {
+                $('.btn-success').html('<i class="fas fa-spinner fa-spin me-2"></i>Saving...');
+                $('.btn-success').prop('disabled', true);
+            });
+
+            // File input styling feedback
+            $('input[type="file"]').on('change', function() {
+                if (this.files && this.files[0]) {
+                    $(this).css({
+                        'border-color': 'var(--success-color)',
+                        'background': 'rgba(72, 187, 120, 0.05)'
+                    });
+                }
+            });
+
+            // Form field focus animations
+            $('.form-control, input, textarea, select').on('focus', function() {
+                $(this).parent().addClass('field-focused');
+            }).on('blur', function() {
+                $(this).parent().removeClass('field-focused');
+            });
+        });
+    </script>
 {% endblock %}

@@ -5,16 +5,147 @@
 {% endblock %}
 
 {% block content %}
-  <div class="container">
-    <form action="{{URL_ROOT}}/edit_profile/" method="post" >
-    {% csrf_token %}
-      <center>
-        <table class="table table-bordered">
-          {{ form.as_table }}
-        </table>
-      </center>
-      <br>
-        <button class="btn btn-primary pull-right" type="submit">Save Profile</button>
+<div class="edit-profile-wrapper">
+  <div class="form-card">
+    <h2 class="form-title">Edit Profile</h2>
+    <form action="{{URL_ROOT}}/edit_profile/" method="post">
+      {% csrf_token %}
+      <div class="form-table">
+        {{ form.as_table }}
+      </div>
+      <button class="btn-save" type="submit">Save Profile</button>
     </form>
   </div>
+</div>
+
+<style>
+  /* Gradient Background */
+  .edit-profile-wrapper {
+    min-height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    padding: 20px;
+  }
+
+  /* Card styling */
+  .form-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(12px);
+    border-radius: 20px;
+    padding: 40px;
+    width: 100%;
+    max-width: 600px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.2);
+    color: #fff;
+    animation: fadeIn 0.8s ease-in-out;
+  }
+
+  .form-title {
+    text-align: center;
+    font-size: 28px;
+    font-weight: 600;
+    margin-bottom: 20px;
+  }
+
+  /* Table styling */
+  .form-table table {
+    width: 100%;
+  }
+
+  .form-table td {
+    padding: 12px 8px;
+  }
+
+  .form-table input,
+  .form-table select,
+  .form-table textarea {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 10px;
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+    outline: none;
+    transition: all 0.3s ease;
+  }
+
+  .form-table input:focus,
+  .form-table select:focus,
+  .form-table textarea:focus {
+    background: rgba(255, 255, 255, 0.25);
+    transform: scale(1.02);
+    box-shadow: 0 0 10px #fff;
+  }
+
+  /* Save button */
+  .btn-save {
+    margin-top: 20px;
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 50px;
+    background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+    color: #fff;
+    font-size: 18px;
+    font-weight: bold;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+
+  .btn-save:hover {
+    transform: scale(1.05);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+  }
+
+  /* Ripple effect */
+  .btn-save::after {
+    content: "";
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    display: block;
+    border-radius: 50%;
+    transform: scale(0);
+    opacity: 0;
+    pointer-events: none;
+    animation: none;
+  }
+
+  @keyframes ripple {
+    to {
+      transform: scale(30);
+      opacity: 0;
+    }
+  }
+
+  /* Fade in animation */
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+</style>
+
+<script>
+  // Button ripple effect
+  document.addEventListener("DOMContentLoaded", function () {
+    const btn = document.querySelector(".btn-save");
+    btn.addEventListener("click", function (e) {
+      const ripple = document.createElement("span");
+      ripple.classList.add("ripple");
+      const rect = btn.getBoundingClientRect();
+      ripple.style.left = e.clientX - rect.left + "px";
+      ripple.style.top = e.clientY - rect.top + "px";
+      btn.appendChild(ripple);
+
+      setTimeout(() => {
+        ripple.remove();
+      }, 600);
+    });
+  });
+</script>
 {% endblock %}

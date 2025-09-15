@@ -9,6 +9,10 @@
     <link rel="stylesheet" href="{% static 'workshop_app/css/jquery-ui.css' %}" type="text/css"/>
     <script src="{% static 'workshop_app/js/jquery-1.12.4.js' %}"></script>
     <script src="{% static 'workshop_app/js/jquery-ui.min.js' %}"></script>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 {% endblock %}
 
 {% block extra-custom-scripts %}
@@ -28,92 +32,465 @@
                 beforeShowDay: $.datepicker.noWeekends,
             });
 
-
             $('#disp_tnc').click(function (e) {
                 e.preventDefault()
                 if ($('#id_workshop_type').val() === '')
-                    $('.modal-body').html("<p class='text-danger'>Please select a workshop type</p>")
+                    $('.modal-body').html("<p class='text-danger'><i class='fas fa-exclamation-triangle me-2'></i>Please select a workshop type</p>")
                 else {
+                    $('.modal-body').html("<div class='text-center'><div class='spinner-border text-primary' role='status'><span class='visually-hidden'>Loading...</span></div><p class='mt-2'>Loading terms and conditions...</p></div>");
                     $.ajax({
                         url: '/workshop/type_tnc/' + $('#id_workshop_type').val(),
                         success: function (data) {
                             $('.modal-body').html(data.tnc)
+                        },
+                        error: function() {
+                            $('.modal-body').html("<p class='text-danger'><i class='fas fa-times-circle me-2'></i>Error loading terms and conditions. Please try again.</p>");
                         }
                     })
                 }
             })
+
+            // Add hover effects and animations
+            $('.workshop-card').hover(
+                function() { $(this).addClass('shadow-lg'); },
+                function() { $(this).removeClass('shadow-lg'); }
+            );
+
+            // Form validation feedback
+            $('form').on('submit', function() {
+                $('.submit-btn').html('<i class="fas fa-spinner fa-spin me-2"></i>Submitting...');
+                $('.submit-btn').prop('disabled', true);
+            });
         });
     </script>
 {% endblock %}
 
-
 {% block content %}
     <style type="text/css">
-        .errorlist {
-            color: red;
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --info-color: #4299e1;
+            --light-bg: #f8fafc;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
         }
 
-    .modal-open .modal{
-        overflow-y: hidden;
-    }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .container {
+            max-width: 800px;
+        }
+
+        .workshop-header {
+            text-align: center;
+            margin-bottom: 3rem;
+            color: white;
+        }
+
+        .workshop-header h1 {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .workshop-header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+            font-weight: 300;
+        }
+
+        .info-banner {
+            background: linear-gradient(45deg, #4299e1, #63b3ed);
+            border: none;
+            border-radius: 12px;
+            color: white;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .info-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(45deg, rgba(255,255,255,0.1) 25%, transparent 25%), 
+                        linear-gradient(-45deg, rgba(255,255,255,0.1) 25%, transparent 25%), 
+                        linear-gradient(45deg, transparent 75%, rgba(255,255,255,0.1) 75%), 
+                        linear-gradient(-45deg, transparent 75%, rgba(255,255,255,0.1) 75%);
+            background-size: 20px 20px;
+            background-position: 0 0, 0 10px, 10px -10px, -10px 0px;
+            opacity: 0.1;
+        }
+
+        .info-banner .alert-content {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .info-banner .info-icon {
+            font-size: 1.5rem;
+            color: rgba(255,255,255,0.9);
+        }
+
+        .workshop-card {
+            background: white;
+            border: none;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow);
+            transition: all 0.3s ease;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .workshop-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .card-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            border-bottom: 1px solid #e2e8f0;
+            padding: 2rem;
+            text-align: center;
+            position: relative;
+        }
+
+        .card-header h3 {
+            color: #2d3748;
+            font-weight: 600;
+            font-size: 1.5rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .card-body {
+            padding: 2.5rem;
+        }
+
+        .form-group {
+            margin-bottom: 2rem;
+        }
+
+        .form-control, select, input[type="text"], input[type="date"] {
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 0.75rem 1rem;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-bottom: 1rem;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .form-control:focus, select:focus, input:focus {
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+            outline: none;
+        }
+
+        .form-label {
+            font-weight: 500;
+            color: #4a5568;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .checkbox-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .checkbox-wrapper input[type="checkbox"] {
+            width: auto;
+            margin: 0;
+            transform: scale(1.2);
+        }
+
+        .terms-link {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .terms-link:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        .submit-btn {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            border: none;
+            border-radius: 8px;
+            color: white;
+            padding: 0.875rem 2rem;
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px 0 rgba(102, 126, 234, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            width: 100%;
+        }
+
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px 0 rgba(102, 126, 234, 0.5);
+        }
+
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .error-container {
+            background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%);
+            border: 1px solid #fc8181;
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin: 1rem 0;
+            position: relative;
+        }
+
+        .error-container::before {
+            content: '⚠️';
+            position: absolute;
+            top: -8px;
+            left: 1rem;
+            background: white;
+            padding: 0 0.5rem;
+            font-size: 1.2rem;
+        }
+
+        .error-title {
+            color: #c53030;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-bottom: 0.5rem;
+            text-align: center;
+        }
+
+        .errorlist {
+            color: #c53030;
+            margin: 0;
+            list-style: none;
+            padding: 0;
+        }
+
+        .errorlist li {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-bottom: 0.25rem;
+        }
+
+        .errorlist li::before {
+            content: '•';
+            color: #fc8181;
+            font-weight: bold;
+        }
+
+        .modal-content {
+            border: none;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+
+        .modal-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border-bottom: none;
+            padding: 1.5rem 2rem;
+        }
+
+        .modal-title {
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .modal-body {
+            padding: 2rem;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        .close {
+            color: white;
+            opacity: 0.8;
+            font-size: 1.5rem;
+            transition: opacity 0.3s ease;
+        }
+
+        .close:hover {
+            opacity: 1;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 1rem;
+            }
+            
+            .col-md-6.col-md-offset-6 {
+                width: 100%;
+                margin: 0;
+            }
+            
+            .card-body {
+                padding: 1.5rem;
+            }
+            
+            .workshop-header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        /* Custom datepicker styling */
+        .ui-datepicker {
+            border-radius: 8px;
+            box-shadow: var(--card-shadow-lg);
+            border: none;
+        }
+
+        .ui-datepicker-header {
+            background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+            color: white;
+            border: none;
+        }
+
+        /* Loading animation */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .workshop-card {
+            animation: fadeIn 0.6s ease-out;
+        }
     </style>
 
-    <div class="container" align="center">
-        <div class="alert alert-info">
-            Note: Before proposing the workshop, please check about the workshop in the
-            <strong>Workshop Types</strong> section
+    <div class="container">
+        <div class="workshop-header">
+            <h1><i class="fas fa-chalkboard-teacher me-3"></i>Workshop Proposals</h1>
+            <p>Share your knowledge and inspire others</p>
         </div>
-        <br><br>
-        <div class="col-md-6 col-md-offset-6">
-            <div class="card border-primary">
-                <div class="card-header">
-                    <h3>Propose Workshop</h3>
+
+        <div class="alert info-banner">
+            <div class="alert-content">
+                <i class="fas fa-info-circle info-icon"></i>
+                <div>
+                    <strong>Important Notice:</strong> Before proposing your workshop, please review the available workshop types and their specific requirements in the <strong>Workshop Types</strong> section.
                 </div>
-                <div class="card-body">
-                    <div class="form-group">
+            </div>
+        </div>
+
+        <div class="row justify-content-center">
+            <div class="col-md-8">
+                <div class="card workshop-card">
+                    <div class="card-header">
+                        <h3><i class="fas fa-plus-circle me-2"></i>Propose New Workshop</h3>
+                    </div>
+                    <div class="card-body">
                         <form method="post">
                             {% csrf_token %}
-                            <br/>
-                            {{ form.workshop_type }}
-                            <br>
-                            {{ form.date }}
-                            <br>
-                            {{ form.tnc_accepted }} I accept the
-                            <a href="#" id="disp_tnc" data-toggle="modal"
-                            data-target="#exampleModalCenter">
-                                terms and conditions
-                            </a>
-                            <br>
+                            
+                            <div class="form-group">
+                                <label class="form-label" for="id_workshop_type">
+                                    <i class="fas fa-tag me-2"></i>Workshop Type
+                                </label>
+                                {{ form.workshop_type }}
+                            </div>
+
+                            <div class="form-group">
+                                <label class="form-label" for="id_date">
+                                    <i class="fas fa-calendar-alt me-2"></i>Preferred Date
+                                </label>
+                                {{ form.date }}
+                            </div>
+
+                            <div class="checkbox-wrapper">
+                                {{ form.tnc_accepted }}
+                                <label for="id_tnc_accepted">
+                                    I accept the 
+                                    <a href="#" id="disp_tnc" class="terms-link" data-toggle="modal" data-target="#exampleModalCenter">
+                                        <i class="fas fa-file-contract me-1"></i>terms and conditions
+                                    </a>
+                                </label>
+                            </div>
+
                             {% if form.errors %}
-                                <br>
-                                <div style="text-align: left; border: 1px solid red; padding-top: 5px">
-                                    <h5 style="text-align: center; color: red; font-weight: bolder">Errors</h5>
+                                <div class="error-container">
+                                    <h5 class="error-title">Please correct the following errors:</h5>
                                     {{ form.errors }}
                                 </div>
                             {% endif %}
-                            <br>
-                            <button class="btn btn-success" type="submit">Submit</button>
+
+                            <button class="submit-btn" type="submit">
+                                <i class="fas fa-paper-plane me-2"></i>
+                                Submit Proposal
+                            </button>
                         </form>
                     </div>
                 </div>
             </div>
         </div>
-        <br>
-
     </div>
-    <!-- Modal -->
+
+    <!-- Enhanced Modal -->
     <div class="modal fade" id="exampleModalCenter" tabindex="-1" role="dialog"
          aria-labelledby="exampleModalCenterTitle" aria-hidden="true">
-        <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title" id="exampleModalLongTitle">Terms and Conditions</h5>
+                    <h5 class="modal-title" id="exampleModalLongTitle">
+                        <i class="fas fa-scroll me-2"></i>Terms and Conditions
+                    </h5>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
                 <div class="modal-body">
-
+                    <!-- Content will be loaded here -->
                 </div>
             </div>
         </div>
