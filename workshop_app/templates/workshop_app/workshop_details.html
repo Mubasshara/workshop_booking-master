@@ -4,81 +4,621 @@
     View Workshop details
 {% endblock %}
 
+{% block extra-dependencies %}
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+{% endblock %}
+
 {% block content %}
-    <div class="container">
-        <table class="table table-bordered">
-            <tr>
-                <th><label for="id_first_name">Workshop Type :</label></th>
-                <td><label for="id_first_name"><a
-                        href="{% url 'workshop_app:workshop_type_details' workshop.workshop_type_id %}">{{ workshop.workshop_type }}</a></label>
-                </td>
-            </tr>
-            <tr>
-                <th><label for="id_last_name">Date :</label></th>
-                <td><label for="id_last_name">{{ workshop.date }}</label></td>
-            </tr>
-            <tr>
-                <th><label for="id_email">Coordinator :</label></th>
-                <td><label for="id_email">{{ workshop.coordinator.get_full_name|title }}</label>
-                </td>
-            </tr>
-            {% if workshop.status %}
-                <tr>
-                    <th><label for="id_institute">Status :</label></th>
-                    <td><span class="badge badge-success">{{ workshop.get_status }}</span></td>
-                </tr>
-                <tr>
-                    <th><label for="id_phone_number">Instructor :</label></th>
-                    <td><label for="id_email">{{ workshop.instructor.get_full_name|title }}</label>
-                    </td>
-                </tr>
-            {% else %}
-                <tr>
-                    <th><label for="id_institute">Status :</label></th>
-                    <td><span class="badge badge-warning">{{ workshop.get_status }}</span></td>
-                </tr>
-            {% endif %}
-        </table>
-        <br>
-        <div class="container">
-            <div class="card mt-2 mb-5">
-                <form method="post">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="mx-3 font-weight-bold">Post a comment</div>
-                            {% if request.user.profile.position == 'instructor' %}
-                                <div class="ml-5">{{ form.public }} Public</div>
-                                <div class="ml-1 text-muted">(Non-public comments are visible only to instructors)</div>
-                            {% endif %}
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        {{ form.comment }}
-                    </div>
-                    <button type="submit" class="float-right btn btn-primary btn-md m-2">Post</button>
-                </form>
+    <style type="text/css">
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --info-color: #4299e1;
+            --light-bg: #f8fafc;
+            --dark-text: #2d3748;
+            --muted-text: #718096;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
+
+        .main-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow-lg);
+            overflow: hidden;
+            margin: 2rem auto;
+            max-width: 1000px;
+            position: relative;
+        }
+
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        .workshop-header {
+            background: linear-gradient(135deg, #f8fafc 0%, #e2e8f0 100%);
+            padding: 2.5rem 2rem;
+            text-align: center;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .workshop-title {
+            color: var(--dark-text);
+            font-weight: 700;
+            font-size: 2rem;
+            margin: 0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .workshop-content {
+            padding: 2rem;
+        }
+
+        /* Workshop Details Table Styling */
+        .workshop-details {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 3rem;
+            border: 1px solid var(--border-color);
+        }
+
+        .details-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 0;
+        }
+
+        .details-table tr {
+            border-bottom: 1px solid var(--border-color);
+            transition: all 0.3s ease;
+        }
+
+        .details-table tr:hover {
+            background: rgba(102, 126, 234, 0.02);
+        }
+
+        .details-table tr:last-child {
+            border-bottom: none;
+        }
+
+        .details-table th {
+            background: var(--light-bg);
+            padding: 1.25rem 1.5rem;
+            font-weight: 600;
+            color: var(--dark-text);
+            width: 30%;
+            border: none;
+            text-align: left;
+            font-size: 1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .details-table td {
+            padding: 1.25rem 1.5rem;
+            color: var(--dark-text);
+            border: none;
+            font-size: 1rem;
+        }
+
+        .details-table a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .details-table a:hover {
+            color: var(--primary-dark);
+            text-decoration: underline;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .status-badge.success {
+            background: linear-gradient(135deg, var(--success-color), #38a169);
+            color: white;
+            box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+        }
+
+        .status-badge.warning {
+            background: linear-gradient(135deg, var(--warning-color), #dd6b20);
+            color: white;
+            box-shadow: 0 2px 8px rgba(237, 137, 54, 0.3);
+        }
+
+        /* Comment Section */
+        .comments-section {
+            margin-top: 3rem;
+        }
+
+        .section-title {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: var(--dark-text);
+            margin-bottom: 2rem;
+            text-align: center;
+            justify-content: center;
+        }
+
+        .comment-form-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 2rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+        }
+
+        .comment-form-header {
+            background: linear-gradient(135deg, var(--info-color), #3182ce);
+            color: white;
+            padding: 1.5rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .comment-form-title {
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .public-toggle {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-left: auto;
+        }
+
+        .public-toggle input[type="checkbox"] {
+            transform: scale(1.2);
+            margin-right: 0.5rem;
+        }
+
+        .public-note {
+            font-size: 0.875rem;
+            opacity: 0.9;
+            margin-left: 0.5rem;
+        }
+
+        .comment-form-body {
+            padding: 2rem;
+        }
+
+        .comment-textarea {
+            width: 100%;
+            min-height: 120px;
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            font-size: 1rem;
+            font-family: 'Inter', sans-serif;
+            resize: vertical;
+            transition: all 0.3s ease;
+        }
+
+        .comment-textarea:focus {
+            outline: none;
+            border-color: var(--primary-color);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .post-button {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            padding: 0.75rem 2rem;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 14px 0 rgba(102, 126, 234, 0.4);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin: 1.5rem 2rem 2rem auto;
+        }
+
+        .post-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px 0 rgba(102, 126, 234, 0.5);
+        }
+
+        /* Comment Cards */
+        .comment-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: var(--card-shadow);
+            margin-bottom: 1.5rem;
+            border: 1px solid var(--border-color);
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .comment-card:hover {
+            box-shadow: var(--card-shadow-lg);
+            transform: translateY(-2px);
+        }
+
+        .comment-header {
+            background: var(--light-bg);
+            padding: 1.25rem 1.5rem;
+            border-bottom: 1px solid var(--border-color);
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .comment-author {
+            font-weight: 600;
+            color: var(--dark-text);
+            text-decoration: none;
+            transition: color 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .comment-author:hover {
+            color: var(--primary-color);
+        }
+
+        .comment-date {
+            color: var(--muted-text);
+            font-size: 0.875rem;
+            margin-left: auto;
+        }
+
+        .hidden-badge {
+            background: linear-gradient(135deg, #4a5568, #2d3748);
+            color: white;
+            padding: 0.25rem 0.75rem;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .comment-body {
+            padding: 1.5rem;
+        }
+
+        .comment-text {
+            color: var(--dark-text);
+            line-height: 1.6;
+            margin: 0;
+            font-size: 1rem;
+        }
+
+        /* Empty State */
+        .empty-comments {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--muted-text);
+        }
+
+        .empty-comments i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                border-radius: 12px;
+            }
+
+            .workshop-content {
+                padding: 1rem;
+            }
+
+            .workshop-title {
+                font-size: 1.5rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .details-table th,
+            .details-table td {
+                padding: 1rem;
+                display: block;
+                width: 100%;
+            }
+
+            .details-table th {
+                background: var(--primary-color);
+                color: white;
+                margin-top: 1rem;
+                border-radius: 8px 8px 0 0;
+            }
+
+            .details-table tr:first-child th {
+                margin-top: 0;
+            }
+
+            .details-table td {
+                border-radius: 0 0 8px 8px;
+                margin-bottom: 1rem;
+            }
+
+            .comment-form-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 1rem;
+            }
+
+            .public-toggle {
+                margin-left: 0;
+            }
+
+            .comment-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 0.5rem;
+            }
+
+            .comment-date {
+                margin-left: 0;
+            }
+        }
+
+        /* Animations */
+        .workshop-details,
+        .comment-form-card,
+        .comment-card {
+            opacity: 0;
+            animation: fadeInUp 0.6s ease-out forwards;
+        }
+
+        .comment-card:nth-child(1) { animation-delay: 0.1s; }
+        .comment-card:nth-child(2) { animation-delay: 0.2s; }
+        .comment-card:nth-child(3) { animation-delay: 0.3s; }
+        .comment-card:nth-child(4) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+    </style>
+
+    <div class="container-fluid">
+        <div class="main-container animate__animated animate__fadeInUp">
+            <!-- Workshop Header -->
+            <div class="workshop-header">
+                <h1 class="workshop-title">
+                    <i class="fas fa-calendar-check"></i>
+                    Workshop Details
+                </h1>
             </div>
-            <br><br>
-            <h2 class="text-center">Comments</h2>
-            <br>
-            {% for comment in workshop_comments %}
-                <div class="card my-2">
-                    <div class="card-header">
-                        <div class="row">
-                            <div class="ml-3 font-weight-bold"><a
-                                    href="{% url 'workshop_app:view_profile' comment.author_id %}">{{ comment.author }}</a></div>
-                            {% if not comment.public %}
-                                <div class="ml-1"><span class="badge badge-dark">Hidden</span></div>
-                            {% endif %}
-                            <div class="ml-3 text-muted">{{ comment.created_date }}</div>
-                        </div>
-                    </div>
-                    <div class="card-body">
-                        <p>{{ comment.comment }}</p>
-                    </div>
+
+            <!-- Workshop Content -->
+            <div class="workshop-content">
+                <!-- Workshop Details Table -->
+                <div class="workshop-details">
+                    <table class="details-table">
+                        <tr>
+                            <th>
+                                <i class="fas fa-tag"></i>
+                                Workshop Type
+                            </th>
+                            <td>
+                                <a href="{% url 'workshop_app:workshop_type_details' workshop.workshop_type_id %}">
+                                    {{ workshop.workshop_type }}
+                                </a>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <i class="fas fa-calendar-alt"></i>
+                                Date
+                            </th>
+                            <td>{{ workshop.date }}</td>
+                        </tr>
+                        <tr>
+                            <th>
+                                <i class="fas fa-user-tie"></i>
+                                Coordinator
+                            </th>
+                            <td>{{ workshop.coordinator.get_full_name|title }}</td>
+                        </tr>
+                        {% if workshop.status %}
+                            <tr>
+                                <th>
+                                    <i class="fas fa-check-circle"></i>
+                                    Status
+                                </th>
+                                <td>
+                                    <span class="status-badge success">
+                                        <i class="fas fa-check"></i>
+                                        {{ workshop.get_status }}
+                                    </span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    <i class="fas fa-chalkboard-teacher"></i>
+                                    Instructor
+                                </th>
+                                <td>{{ workshop.instructor.get_full_name|title }}</td>
+                            </tr>
+                        {% else %}
+                            <tr>
+                                <th>
+                                    <i class="fas fa-clock"></i>
+                                    Status
+                                </th>
+                                <td>
+                                    <span class="status-badge warning">
+                                        <i class="fas fa-hourglass-half"></i>
+                                        {{ workshop.get_status }}
+                                    </span>
+                                </td>
+                            </tr>
+                        {% endif %}
+                    </table>
                 </div>
-            {% endfor %}
+
+                <!-- Comments Section -->
+                <div class="comments-section">
+                    <!-- Comment Form -->
+                    <div class="comment-form-card">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="comment-form-header">
+                                <div class="comment-form-title">
+                                    <i class="fas fa-comment-dots"></i>
+                                    Post a Comment
+                                </div>
+                                {% if request.user.profile.position == 'instructor' %}
+                                    <div class="public-toggle">
+                                        {{ form.public }}
+                                        <label for="id_public">Public</label>
+                                        <span class="public-note">(Non-public comments are visible only to instructors)</span>
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="comment-form-body">
+                                {{ form.comment }}
+                            </div>
+                            <button type="submit" class="post-button">
+                                <i class="fas fa-paper-plane"></i>
+                                Post Comment
+                            </button>
+                        </form>
+                    </div>
+
+                    <!-- Comments List -->
+                    <h2 class="section-title">
+                        <i class="fas fa-comments"></i>
+                        Comments
+                    </h2>
+
+                    {% if workshop_comments %}
+                        {% for comment in workshop_comments %}
+                            <div class="comment-card">
+                                <div class="comment-header">
+                                    <a href="{% url 'workshop_app:view_profile' comment.author_id %}" class="comment-author">
+                                        <i class="fas fa-user-circle"></i>
+                                        {{ comment.author }}
+                                    </a>
+                                    {% if not comment.public %}
+                                        <span class="hidden-badge">
+                                            <i class="fas fa-eye-slash"></i>
+                                            Hidden
+                                        </span>
+                                    {% endif %}
+                                    <div class="comment-date">
+                                        <i class="fas fa-clock"></i>
+                                        {{ comment.created_date }}
+                                    </div>
+                                </div>
+                                <div class="comment-body">
+                                    <p class="comment-text">{{ comment.comment }}</p>
+                                </div>
+                            </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-comments">
+                            <i class="fas fa-comment-slash"></i>
+                            <h3>No Comments Yet</h3>
+                            <p>Be the first to leave a comment on this workshop!</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
         </div>
     </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Form submission feedback
+            const form = document.querySelector('form');
+            const submitButton = document.querySelector('.post-button');
+            
+            if (form && submitButton) {
+                form.addEventListener('submit', function() {
+                    submitButton.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Posting...';
+                    submitButton.disabled = true;
+                });
+            }
+
+            // Auto-resize textarea
+            const textarea = document.querySelector('.comment-textarea');
+            if (textarea) {
+                textarea.addEventListener('input', function() {
+                    this.style.height = 'auto';
+                    this.style.height = (this.scrollHeight) + 'px';
+                });
+            }
+
+            // Add smooth scroll to comments when form is submitted
+            if (window.location.hash === '#comments') {
+                document.querySelector('.comments-section').scrollIntoView({
+                    behavior: 'smooth'
+                });
+            }
+        });
+    </script>
 {% endblock %}
