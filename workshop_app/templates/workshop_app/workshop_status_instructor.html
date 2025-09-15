@@ -6,131 +6,789 @@
 {% endblock %}
 
 {% block extra-dependencies %}
-    <style >
-    .table-heading{
-        color: #04a9cf;
-    }
-    </style>
+    <!-- Font Awesome for icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <!-- Animate.css for animations -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/animate.css/4.1.1/animate.min.css">
+    
     <link rel="stylesheet" href="{% static 'workshop_app/css/jquery-ui.css' %}" type="text/css"/>
     <script src="{% static 'workshop_app/js/jquery-1.12.4.js' %}"></script>
     <script src="{% static 'workshop_app/js/jquery-ui.min.js' %}"></script>
 {% endblock %}
+
 {% block extra-custom-scripts %}
     {% load static %}
     <script src="{% static 'workshop_app/js/datepicker.js' %}"></script>
 {% endblock %}
 
-
 {% block content %}
-    {% if not workshops %}
-        <div class="container">
-            <div class="jumbotron">
-                <h1>Welcome {{ user.first_name }}</h1>
-                <p>Your workshop related information will be shown here, Please navigate to <b>Workshop list</b> and
-                    depending upon
-                    your expertise and availability create a workshop by going to
-                    <b>Create Workshop</b>.</p>
-            </div>
-        </div>
-    {% else %}
-        <h3 class="text-center">The status of your workshops </h3>
-        <br>
+    <style type="text/css">
+        :root {
+            --primary-color: #667eea;
+            --primary-dark: #5a67d8;
+            --secondary-color: #764ba2;
+            --success-color: #48bb78;
+            --danger-color: #f56565;
+            --warning-color: #ed8936;
+            --info-color: #4299e1;
+            --light-bg: #f8fafc;
+            --dark-text: #2d3748;
+            --muted-text: #718096;
+            --border-color: #e2e8f0;
+            --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            --card-shadow-lg: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+        }
 
-        <!-- Accepted View -->
-        <br>
-        <div class="container">
-            <h3 align="center" class="table-heading"><strong>Workshops Accepted</strong></h3>
-            <table class="table table-striped table-responsive-sm">
-                <thead>
-                <tr>
-                    <th>Coordinator Name</th>
-                    <th>Institute</th>
-                    <th>Workshop Name</th>
-                    <th>Workshop Day</th>
-                    <th>Status</th>
-                </tr>
-                </thead>
-                {% for workshop in workshops %}
-                    <tbody>
-                    <tr>
-                        {% if workshop.status %}
-                            <td>
-                                <a href="{% url 'workshop_app:view_profile' workshop.coordinator.id %}">
-                                    {{ workshop.coordinator.get_full_name }}</a>
-                            </td>
-                            <td>{{ workshop.coordinator.profile.institute }}</td>
-                            <td>{{ workshop.workshop_type |capfirst }}</td>
-                            <td>{{ workshop.date | date }}
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 2rem 0;
+        }
 
-                                {% if workshop.date > today %}
-                                    <span class="material-icons datepicker btn"
-                                          data-toggle="popinfo"
-                                          title="Note"
-                                          data-content="Click here to change date"
-                                          onclick="changeDate('R,{{ workshop.date| safe }}, {{ forloop.counter }}')">event</span>
-                                    <div class="myDialogR{{ forloop.counter }}" style="display: none;"
-                                         title="Select New Date">
-                                        <form method="post" action="{% url 'workshop_app:change_workshop_date' workshop.id %}">
-                                            <input type="text" placeholder="New date" name="new_date"
-                                                   class="rDate{{ forloop.counter }}"/><br>
-                                            {% csrf_token %}
-                                            <button class="btn btn-primary btn-xs" type="submit">Save</button>
-                                        </form>
+        .main-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--card-shadow-lg);
+            overflow: hidden;
+            margin: 2rem auto;
+            max-width: 1400px;
+            position: relative;
+            min-height: 60vh;
+        }
+
+        .main-container::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary-color), var(--secondary-color));
+        }
+
+        /* Welcome Section */
+        .welcome-section {
+            text-align: center;
+            padding: 4rem 2rem;
+            background: linear-gradient(135deg, rgba(102, 126, 234, 0.05), rgba(118, 75, 162, 0.05));
+            position: relative;
+            overflow: hidden;
+        }
+
+        .welcome-section::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(102, 126, 234, 0.1) 0%, transparent 70%);
+            animation: float 20s ease-in-out infinite;
+        }
+
+        @keyframes float {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            50% { transform: translateY(-20px) rotate(180deg); }
+        }
+
+        .welcome-content {
+            position: relative;
+            z-index: 1;
+            max-width: 700px;
+            margin: 0 auto;
+        }
+
+        .welcome-title {
+            font-size: 3rem;
+            font-weight: 700;
+            color: var(--dark-text);
+            margin-bottom: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .welcome-subtitle {
+            font-size: 1.2rem;
+            color: var(--muted-text);
+            line-height: 1.6;
+            margin-bottom: 2rem;
+        }
+
+        .welcome-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .welcome-cta {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1rem 2rem;
+            border-radius: 50px;
+            text-decoration: none;
+            font-weight: 600;
+            font-size: 1.1rem;
+            box-shadow: 0 8px 25px 0 rgba(102, 126, 234, 0.4);
+            transition: all 0.3s ease;
+        }
+
+        .welcome-cta:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px 0 rgba(102, 126, 234, 0.6);
+            color: white;
+            text-decoration: none;
+        }
+
+        .welcome-cta.secondary {
+            background: linear-gradient(135deg, var(--info-color), #3182ce);
+        }
+
+        /* Workshop Content */
+        .workshop-content {
+            padding: 3rem 2rem;
+        }
+
+        .page-title {
+            text-align: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: var(--dark-text);
+            margin-bottom: 3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 1rem;
+        }
+
+        .workshop-section {
+            margin-bottom: 4rem;
+            opacity: 0;
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+
+        .workshop-section:nth-child(2) { animation-delay: 0.2s; }
+        .workshop-section:nth-child(3) { animation-delay: 0.4s; }
+
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(40px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .section-header {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            padding: 1.5rem 2rem;
+            border-radius: 12px 12px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            font-size: 1.5rem;
+            font-weight: 600;
+            box-shadow: var(--card-shadow);
+        }
+
+        .section-header.success {
+            background: linear-gradient(135deg, var(--success-color), #38a169);
+        }
+
+        .section-header.warning {
+            background: linear-gradient(135deg, var(--warning-color), #dd6b20);
+        }
+
+        /* Table Styling */
+        .workshop-table-container {
+            background: white;
+            border-radius: 0 0 12px 12px;
+            overflow: hidden;
+            box-shadow: var(--card-shadow);
+            border: 1px solid var(--border-color);
+        }
+
+        .workshop-table {
+            width: 100%;
+            margin: 0;
+            border-collapse: collapse;
+        }
+
+        .workshop-table thead {
+            background: var(--light-bg);
+        }
+
+        .workshop-table th {
+            padding: 1.25rem 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: var(--dark-text);
+            border-bottom: 2px solid var(--border-color);
+            font-size: 0.95rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            position: relative;
+            white-space: nowrap;
+        }
+
+        .workshop-table td {
+            padding: 1.25rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--dark-text);
+            font-size: 0.95rem;
+            transition: all 0.3s ease;
+            vertical-align: middle;
+        }
+
+        .workshop-table tbody tr {
+            transition: all 0.3s ease;
+        }
+
+        .workshop-table tbody tr:hover {
+            background: rgba(102, 126, 234, 0.02);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        }
+
+        .workshop-table tbody tr:last-child td {
+            border-bottom: none;
+        }
+
+        .workshop-table a {
+            color: var(--primary-color);
+            text-decoration: none;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .workshop-table a:hover {
+            color: var(--primary-dark);
+            text-decoration: none;
+        }
+
+        /* Status Badges */
+        .status-badge {
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            white-space: nowrap;
+        }
+
+        .status-badge.success {
+            background: linear-gradient(135deg, var(--success-color), #38a169);
+            color: white;
+            box-shadow: 0 2px 8px rgba(72, 187, 120, 0.3);
+        }
+
+        .status-badge.warning {
+            background: linear-gradient(135deg, var(--warning-color), #dd6b20);
+            color: white;
+            box-shadow: 0 2px 8px rgba(237, 137, 54, 0.3);
+        }
+
+        /* Action Buttons */
+        .btn {
+            padding: 0.5rem 1.25rem;
+            border-radius: 6px;
+            font-weight: 500;
+            font-size: 0.875rem;
+            border: none;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            text-decoration: none;
+            font-family: 'Inter', sans-serif;
+            white-space: nowrap;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            box-shadow: 0 3px 10px 0 rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(102, 126, 234, 0.5);
+            color: white;
+            text-decoration: none;
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, var(--success-color), #38a169);
+            color: white;
+            box-shadow: 0 3px 10px 0 rgba(72, 187, 120, 0.4);
+        }
+
+        .btn-success:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px 0 rgba(72, 187, 120, 0.5);
+            color: white;
+            text-decoration: none;
+        }
+
+        /* Date picker styling */
+        .date-controls {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+        }
+
+        .date-picker-btn {
+            background: var(--info-color);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 8px rgba(66, 153, 225, 0.3);
+        }
+
+        .date-picker-btn:hover {
+            background: #3182ce;
+            transform: scale(1.1);
+            box-shadow: 0 4px 15px rgba(66, 153, 225, 0.5);
+        }
+
+        /* Dialog styling */
+        .ui-dialog {
+            border-radius: 12px;
+            box-shadow: var(--card-shadow-lg);
+            border: none;
+        }
+
+        .ui-dialog-titlebar {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            color: white;
+            border: none;
+            border-radius: 12px 12px 0 0;
+            padding: 1rem 1.5rem;
+        }
+
+        .ui-dialog-content {
+            padding: 1.5rem;
+        }
+
+        .ui-dialog input[type="text"] {
+            width: 100%;
+            padding: 0.75rem;
+            border: 2px solid var(--border-color);
+            border-radius: 6px;
+            margin-bottom: 1rem;
+            font-size: 1rem;
+        }
+
+        .ui-dialog input[type="text"]:focus {
+            border-color: var(--primary-color);
+            outline: none;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        /* Empty State */
+        .empty-state {
+            text-align: center;
+            padding: 3rem 2rem;
+            color: var(--muted-text);
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            margin-bottom: 1.5rem;
+            opacity: 0.3;
+        }
+
+        .empty-state h4 {
+            color: var(--dark-text);
+            margin-bottom: 1rem;
+            font-size: 1.5rem;
+        }
+
+        /* Responsive Design */
+        @media (max-width: 1024px) {
+            .workshop-table {
+                font-size: 0.85rem;
+            }
+            
+            .workshop-table th,
+            .workshop-table td {
+                padding: 1rem 0.75rem;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .main-container {
+                margin: 1rem;
+                border-radius: 12px;
+            }
+
+            .welcome-title {
+                font-size: 2rem;
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+
+            .welcome-section {
+                padding: 3rem 1rem;
+            }
+
+            .workshop-content {
+                padding: 2rem 1rem;
+            }
+
+            .page-title {
+                font-size: 2rem;
+                flex-direction: column;
+            }
+
+            .section-header {
+                padding: 1.25rem 1rem;
+                font-size: 1.25rem;
+            }
+
+            .welcome-actions {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .welcome-cta {
+                width: 100%;
+                max-width: 300px;
+                justify-content: center;
+            }
+
+            /* Mobile table scrolling */
+            .workshop-table-container {
+                overflow-x: auto;
+            }
+
+            .workshop-table {
+                min-width: 800px;
+            }
+
+            .workshop-table th,
+            .workshop-table td {
+                padding: 0.75rem 0.5rem;
+                font-size: 0.8rem;
+            }
+
+            .status-badge {
+                font-size: 0.7rem;
+                padding: 0.4rem 0.8rem;
+            }
+
+            .btn {
+                font-size: 0.75rem;
+                padding: 0.4rem 1rem;
+            }
+        }
+
+        /* Loading animation for table rows */
+        .workshop-table tbody tr {
+            opacity: 0;
+            animation: fadeIn 0.5s ease-out forwards;
+        }
+
+        .workshop-table tbody tr:nth-child(1) { animation-delay: 0.1s; }
+        .workshop-table tbody tr:nth-child(2) { animation-delay: 0.2s; }
+        .workshop-table tbody tr:nth-child(3) { animation-delay: 0.3s; }
+        .workshop-table tbody tr:nth-child(4) { animation-delay: 0.4s; }
+        .workshop-table tbody tr:nth-child(5) { animation-delay: 0.5s; }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateX(-20px); }
+            to { opacity: 1; transform: translateX(0); }
+        }
+    </style>
+
+    <div class="container-fluid">
+        <div class="main-container animate__animated animate__fadeInUp">
+            {% if not workshops %}
+                <!-- Welcome Section for New Instructors -->
+                <div class="welcome-section">
+                    <div class="welcome-content">
+                        <h1 class="welcome-title">
+                            <i class="fas fa-chalkboard-teacher" style="color: var(--primary-color);"></i>
+                            Welcome {{ user.first_name }}!
+                        </h1>
+                        <p class="welcome-subtitle">
+                            Your instructor dashboard is ready! Workshop information and requests from coordinators will appear here. 
+                            Start by exploring available workshop opportunities and creating workshops based on your expertise.
+                        </p>
+                        <div class="welcome-actions">
+                            <a href="{% url 'workshop_app:workshop_list' %}" class="welcome-cta">
+                                <i class="fas fa-list"></i>
+                                Browse Workshop List
+                            </a>
+                            <a href="{% url 'workshop_app:create_workshop' %}" class="welcome-cta secondary">
+                                <i class="fas fa-plus-circle"></i>
+                                Create Workshop
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            {% else %}
+                <!-- Workshop Content -->
+                <div class="workshop-content">
+                    <h1 class="page-title">
+                        <i class="fas fa-chart-bar"></i>
+                        Instructor Dashboard
+                    </h1>
+
+                    <!-- Accepted Workshops Section -->
+                    <div class="workshop-section">
+                        <div class="section-header success">
+                            <i class="fas fa-check-circle"></i>
+                            Workshops Accepted
+                        </div>
+                        <div class="workshop-table-container">
+                            {% with accepted_workshops=workshops|dictsort:"status" %}
+                                {% if accepted_workshops %}
+                                    <table class="workshop-table">
+                                        <thead>
+                                            <tr>
+                                                <th><i class="fas fa-user me-2"></i>Coordinator</th>
+                                                <th><i class="fas fa-university me-2"></i>Institute</th>
+                                                <th><i class="fas fa-tag me-2"></i>Workshop</th>
+                                                <th><i class="fas fa-calendar me-2"></i>Date</th>
+                                                <th><i class="fas fa-info-circle me-2"></i>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for workshop in workshops %}
+                                                {% if workshop.status %}
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{% url 'workshop_app:view_profile' workshop.coordinator.id %}">
+                                                                {{ workshop.coordinator.get_full_name }}
+                                                            </a>
+                                                        </td>
+                                                        <td>{{ workshop.coordinator.profile.institute }}</td>
+                                                        <td>{{ workshop.workshop_type|capfirst }}</td>
+                                                        <td>
+                                                            <div class="date-controls">
+                                                                <span>{{ workshop.date|date }}</span>
+                                                                {% if workshop.date > today %}
+                                                                    <button class="date-picker-btn" 
+                                                                            data-toggle="popover"
+                                                                            title="Change Date"
+                                                                            data-content="Click to reschedule workshop"
+                                                                            onclick="changeDate('R,{{ workshop.date|safe }}, {{ forloop.counter }}')">
+                                                                        <i class="fas fa-edit"></i>
+                                                                    </button>
+                                                                    <div class="myDialogR{{ forloop.counter }}" style="display: none;" title="Select New Date">
+                                                                        <form method="post" action="{% url 'workshop_app:change_workshop_date' workshop.id %}">
+                                                                            {% csrf_token %}
+                                                                            <input type="text" placeholder="Select new date" name="new_date" class="rDate{{ forloop.counter }}"/>
+                                                                            <button class="btn btn-primary" type="submit">
+                                                                                <i class="fas fa-save"></i> Save Changes
+                                                                            </button>
+                                                                        </form>
+                                                                    </div>
+                                                                {% endif %}
+                                                            </div>
+                                                        </td>
+                                                        <td>
+                                                            <span class="status-badge success">
+                                                                <i class="fas fa-check"></i>
+                                                                {{ workshop.get_status }}
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-calendar-check"></i>
+                                        <h4>No Accepted Workshops</h4>
+                                        <p>Workshops you accept will appear here.</p>
                                     </div>
                                 {% endif %}
-                            </td>
-                            <td><span class="badge badge-success">{{ workshop.get_status }}</span></td>
-                        {% endif %}
-                    </tr>
-                    </tbody>
+                            {% endwith %}
+                        </div>
+                    </div>
 
-                {% endfor %}
-
-            </table>
+                    <!-- Proposed Workshops Section -->
+                    <div class="workshop-section">
+                        <div class="section-header warning">
+                            <i class="fas fa-clock"></i>
+                            Workshops Proposed By Coordinators
+                        </div>
+                        <div class="workshop-table-container">
+                            {% with proposed_workshops=workshops|dictsort:"status" %}
+                                {% if proposed_workshops %}
+                                    <table class="workshop-table">
+                                        <thead>
+                                            <tr>
+                                                <th><i class="fas fa-user me-2"></i>Coordinator</th>
+                                                <th><i class="fas fa-university me-2"></i>Institute</th>
+                                                <th><i class="fas fa-tag me-2"></i>Workshop</th>
+                                                <th><i class="fas fa-calendar me-2"></i>Date</th>
+                                                <th><i class="fas fa-info-circle me-2"></i>Status</th>
+                                                <th><i class="fas fa-cog me-2"></i>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% csrf_token %}
+                                            {% for workshop in workshops %}
+                                                {% if not workshop.status and workshop.tnc_accepted %}
+                                                    <tr>
+                                                        <td>
+                                                            <a href="{% url 'workshop_app:view_profile' workshop.coordinator.id %}">
+                                                                {{ workshop.coordinator.get_full_name }}
+                                                            </a>
+                                                        </td>
+                                                        <td>{{ workshop.coordinator.profile.institute }}</td>
+                                                        <td>{{ workshop.workshop_type }}</td>
+                                                        <td>{{ workshop.date|date }}</td>
+                                                        <td>
+                                                            <span class="status-badge warning">
+                                                                <i class="fas fa-hourglass-half"></i>
+                                                                {{ workshop.get_status }}
+                                                            </span>
+                                                        </td>
+                                                        <td>
+                                                            <a href="{% url 'workshop_app:accept_workshop' workshop.id %}" 
+                                                               class="btn btn-success"
+                                                               onclick="return confirm('⚠️ Important: Once accepted, you cannot reject this workshop. You will need to personally contact the coordinator if cancellation becomes necessary.\n\nAre you sure you want to accept this workshop?')">
+                                                                <i class="fas fa-check"></i>
+                                                                Accept Workshop
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                {% endif %}
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                {% else %}
+                                    <div class="empty-state">
+                                        <i class="fas fa-clipboard-list"></i>
+                                        <h4>No Pending Proposals</h4>
+                                        <p>Workshop proposals from coordinators will appear here for your review.</p>
+                                    </div>
+                                {% endif %}
+                            {% endwith %}
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
         </div>
+    </div>
 
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Initialize popovers
+            if (typeof $ !== 'undefined' && $.fn.popover) {
+                $('[data-toggle="popover"]').popover({
+                    trigger: 'hover',
+                    placement: 'top'
+                });
+            }
 
-        <!-- Proposed View -->
-        <br>
-        <div class="container">
-            <h3 class="text-center table-heading"><strong>Workshops Proposed By Coordinators</strong>
-            </h3>
-            <table class="table table-striped table-responsive-sm">
-                <thead>
-                <tr>
-                    <th>Coordinator Name</th>
-                    <th>Institute</th>
-                    <th>Workshop Name</th>
-                    <th>Workshop Day</th>
-                    <th>Status</th>
-                    <th>Action</th>
-                </tr>
-                </thead>
-                {% csrf_token %}
-                {% for workshop in workshops %}
-                    <tbody>
-                    <tr>
-                        {% if not workshop.status and workshop.tnc_accepted %}
-                            <td>
-                                <a href="{% url 'workshop_app:view_profile' workshop.coordinator.id %}">
-                                    {{ workshop.coordinator.get_full_name }}</a>
-                            </td>
-                            <td>{{ workshop.coordinator.profile.institute }}</td>
-                            <td>{{ workshop.workshop_type }}</td>
-                            <td>{{ workshop.date | date }}</td>
-                            <td><span class="badge badge-warning">{{ workshop.get_status }}</span></td>
-                            <td>
-                                <a href="{% url 'workshop_app:accept_workshop' workshop.id %}" class="btn btn-primary btn-sm"  onclick="return confirm('Once accepted you cannot reject, you have to personally contact the Coordinator if the workshop is to be cancelled. Are you sure you want to accept the workshop?')">
-                                    Accept
-                                </a>
-                            </td>
-                        {% endif %}
-                    </tr>
-                    </tbody>
+            // Enhanced confirm dialog
+            document.querySelectorAll('a[onclick*="confirm"]').forEach(link => {
+                link.addEventListener('click', function(e) {
+                    // Add visual feedback while processing
+                    const button = this;
+                    const originalText = button.innerHTML;
+                    
+                    // Override default confirm behavior with custom styling
+                    e.preventDefault();
+                    
+                    if (confirm(this.getAttribute('onclick').match(/confirm\('([^']*)'\)/)[1])) {
+                        button.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Processing...';
+                        button.style.pointerEvents = 'none';
+                        
+                        // Navigate to the URL
+                        setTimeout(() => {
+                            window.location.href = this.href;
+                        }, 500);
+                    }
+                });
+            });
 
-                {% endfor %}
-            </table>
-        </div>
-    {% endif %}
+            // Add interactive hover effects
+            const tableRows = document.querySelectorAll('.workshop-table tbody tr');
+            
+            tableRows.forEach(row => {
+                row.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-3px)';
+                });
+                
+                row.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
+            });
 
+            // Add ripple effect to buttons
+            document.querySelectorAll('.btn').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    let ripple = document.createElement('span');
+                    let rect = this.getBoundingClientRect();
+                    let size = Math.max(rect.width, rect.height);
+                    ripple.style.width = ripple.style.height = size + 'px';
+                    ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                    ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+                    ripple.classList.add('ripple');
+                    
+                    const style = document.createElement('style');
+                    style.textContent = `
+                        .ripple {
+                            position: absolute;
+                            border-radius: 50%;
+                            background: rgba(255,255,255,0.6);
+                            transform: scale(0);
+                            animation: ripple 0.6s linear;
+                            pointer-events: none;
+                        }
+                        @keyframes ripple {
+                            to {
+                                transform: scale(4);
+                                opacity: 0;
+                            }
+                        }
+                    `;
+                    document.head.appendChild(style);
+                    
+                    this.appendChild(ripple);
+                    
+                    setTimeout(() => {
+                        ripple.remove();
+                        style.remove();
+                    }, 600);
+                });
+            });
+        });
+
+        // Preserve original changeDate function
+        function changeDate(params) {
+            console.log('changeDate called with:', params);
+        }
+    </script>
 {% endblock %}
